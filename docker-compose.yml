@@ -1,5 +1,5 @@
 # TravelHub completo:            docker compose up -d --build
-# Solo infraestructura (dev):     docker compose up -d postgres rabbitmq redis mailpit
+# Solo infraestructura (dev):     docker compose up -d postgres rabbitmq redis mailpit zipkin
 # Con LLM local (opcional):       docker compose --profile llm up -d
 x-java: &java
   restart: unless-stopped
@@ -7,6 +7,7 @@ x-java: &java
     DB_USER: ${DB_USER:-travelhub}
     DB_PASSWORD: ${DB_PASSWORD:-travelhub}
     RABBIT_HOST: rabbitmq
+    ZIPKIN_URL: http://zipkin:9411/api/v2/spans
   depends_on: &java-deps
     postgres: { condition: service_healthy }
     rabbitmq: { condition: service_healthy }
@@ -44,6 +45,10 @@ services:
     image: axllent/mailpit
     ports: ["1025:1025", "8025:8025"]      # bandeja: http://localhost:8025
 
+  zipkin:
+    image: openzipkin/zipkin
+    ports: ["9411:9411"]                   # trazas: http://localhost:9411
+
   ollama:
     image: ollama/ollama
     profiles: ["llm"]
@@ -70,6 +75,8 @@ services:
     build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: precios-service } }
     restart: unless-stopped
     ports: ["8082:8082"]
+    environment:
+      ZIPKIN_URL: http://zipkin:9411/api/v2/spans
 
   reservas:
     <<: *java
@@ -80,6 +87,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/reservas_db
       CATALOGO_URL: http://catalogo:8081
       PRECIOS_URL: http://precios:8082
+      RESERVAS_VENCIMIENTO: ${RESERVAS_VENCIMIENTO:-15m}
 
   pagos:
     <<: *java
@@ -97,6 +105,7 @@ services:
       RABBIT_HOST: rabbitmq
       MAIL_HOST: mailpit
       IA_URL: http://ia:8000
+      ZIPKIN_URL: http://zipkin:9411/api/v2/spans
     depends_on:
       rabbitmq: { condition: service_healthy }
 

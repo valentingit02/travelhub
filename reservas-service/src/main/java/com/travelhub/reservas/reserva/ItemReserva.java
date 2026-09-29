@@ -20,12 +20,13 @@ public class ItemReserva {
     @Column(nullable = false, length = 20)
     private TipoProducto tipo;
 
-    @Column(name = "producto_id", nullable = false, length = 600)   // los rateKey de Hotelbeds son largos
+    @Column(name = "producto_id", nullable = false, length = 1000)   // los rateKey de Hotelbeds son largos
     private String productoId;
 
     @Column(nullable = false, length = 200)
     private String descripcion;
 
+    /** Precio base VERIFICADO por el catalogo (USD), nunca el que manda el cliente. */
     @Column(name = "precio_base", nullable = false, precision = 12, scale = 2)
     private BigDecimal precioBase;
 
@@ -44,7 +45,7 @@ public class ItemReserva {
     public ItemReserva(TipoProducto tipo, String productoId, String descripcion, BigDecimal precioBase) {
         this.tipo = tipo;
         this.productoId = productoId;
-        this.descripcion = descripcion;
+        this.descripcion = descripcion.length() > 200 ? descripcion.substring(0, 200) : descripcion;
         this.precioBase = precioBase;
     }
 

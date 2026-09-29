@@ -14,14 +14,16 @@ public final class ReservaDtos {
 
     private ReservaDtos() { }
 
-    public record ItemRequest(@NotNull TipoProducto tipo, @NotBlank String productoId, @NotBlank String descripcion,
-                              @NotNull @DecimalMin("0.01") BigDecimal precioBase, @NotBlank String moneda,
-                              @NotNull @DecimalMin("0.0") @DecimalMax("1.0") Double ocupacion) { }
+    /**
+     * El cliente SOLO elige que producto quiere. Precio, moneda, descripcion y ocupacion
+     * los obtiene el servidor del catalogo: no se puede reservar un hotel a 1 USD desde Postman.
+     */
+    public record ItemRequest(@NotNull TipoProducto tipo, @NotBlank @Size(max = 1000) String productoId) { }
 
     public record Request(@NotNull Long viajeroId, @NotBlank @Size(min = 3, max = 3) String destino,
                           @NotNull @FutureOrPresent LocalDate desde, @NotNull LocalDate hasta,
                           @NotNull @Min(1) @Max(9) Integer pasajeros,
-                          @NotEmpty List<@Valid ItemRequest> items) { }
+                          @NotEmpty @Size(max = 8) List<@Valid ItemRequest> items) { }
 
     public record ItemResponse(Long id, TipoProducto tipo, String productoId, String descripcion,
                                BigDecimal precioBase, BigDecimal precioCotizado, String refExterna, EstadoItem estado) {

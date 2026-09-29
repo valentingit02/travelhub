@@ -16,7 +16,7 @@ public class HistorialPrecio {
     @Column(name = "tipo_producto", nullable = false, length = 20)
     private String tipoProducto;
 
-    @Column(name = "producto_ref", nullable = false, length = 80)
+    @Column(name = "producto_ref", nullable = false, length = 1000)
     private String productoRef;
 
     @Column(name = "destino_iata", length = 3)

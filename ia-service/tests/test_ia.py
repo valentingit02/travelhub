@@ -1,27 +1,47 @@
 from datetime import date, timedelta
 
+import numpy as np
 from fastapi.testclient import TestClient
 
 import app.resumen as resumen
-from app.anomalias import detector
+from app.anomalias import MIN_MUESTRAS, DetectorAnomalias, detector
 from app.main import app
 from app.mensajeria import procesar
 from app.recomendaciones import recomendar
-from evaluar_modelo import evaluar
+from evaluar_modelo import escenario_historial, escenario_referencia, escenario_variacion
 
 cliente = TestClient(app)
 
 
-def test_cumple_rnf_de_exactitud_y_latencia():
-    m = evaluar()
-    assert m["recall"] >= 0.85
-    assert m["precision"] >= 0.80
-    assert m["latencia_p95_ms"] < 200
+def test_cumple_rnf_en_los_tres_escenarios():
+    for m in (escenario_referencia(), escenario_historial(), escenario_variacion()):
+        assert m["recall"] >= 0.85
+        assert m["precision"] >= 0.85
+        assert m["latencia_p95_ms"] < 200
 
 
 def test_auto_a_un_dolar_es_anomalia():
     assert detector.evaluar("AUTO", 1.0).es_anomalia
     assert not detector.evaluar("AUTO", 80.0).es_anomalia
+
+
+def test_vuelo_caro_a_madrid_sin_historial_no_se_bloquea():
+    assert not DetectorAnomalias().evaluar("VUELO", 900.0, "MAD").es_anomalia
+
+
+def test_variacion_brusca_respecto_del_anterior():
+    r = DetectorAnomalias().evaluar("AUTO", 110.0, "BRC", precio_anterior=15.0)
+    assert r.es_anomalia and r.fuente == "variacion"
+
+
+def test_reentrena_con_historial_por_destino():
+    det = DetectorAnomalias()
+    rng = np.random.default_rng(1)
+    obs = [("HOTEL", "MAD", float(p)) for p in np.exp(rng.normal(np.log(400), 0.15, MIN_MUESTRAS + 10))]
+    assert det.entrenar_con_historial(obs) == 1
+    assert det.evaluar("HOTEL", 400.0, "MAD").fuente == "historial MAD"
+    assert det.evaluar("HOTEL", 1500.0, "MAD").es_anomalia        # para la referencia global seria normal
+    assert not det.evaluar("HOTEL", 400.0, "MAD").es_anomalia
 
 
 def test_endpoint_evaluar():
@@ -30,10 +50,16 @@ def test_endpoint_evaluar():
     assert r.json()["esAnomalia"] is True
 
 
+def test_endpoint_modelo():
+    r = cliente.get("/api/ia/anomalias/modelo")
+    assert r.status_code == 200
+    assert "referencia" in r.json()
+
+
 def test_consumidor_publica_solo_si_hay_anomalia():
     base = {"productoRef": "AUTO-7", "tipoProducto": "AUTO", "destino": "BRC", "moneda": "USD"}
-    assert procesar(base | {"precioNuevo": 85}) is None
-    salida = procesar(base | {"precioNuevo": 1})
+    assert procesar(base | {"precioNuevo": 85, "precioAnterior": 80}) is None
+    salida = procesar(base | {"precioNuevo": 1, "precioAnterior": 120})
     assert salida["productoRef"] == "AUTO-7"
 
 

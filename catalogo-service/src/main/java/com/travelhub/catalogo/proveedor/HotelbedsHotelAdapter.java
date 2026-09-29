@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.travelhub.common.domain.TipoProducto;
 import com.travelhub.common.util.HotelbedsSignature;
 import com.travelhub.common.web.ExternalServiceException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,7 +23,8 @@ import java.util.*;
 
 /**
  * Patron Adapter para Hotelbeds Hotel API (entorno de evaluacion, 50 requests/dia).
- * La cache de Redis (@Cacheable) evita gastar la cuota con busquedas repetidas.
+ * Cache en Redis + circuit breaker "hotelbeds" para no gastar cuota ni colgar la busqueda.
+ * Los precios llegan en EUR: el catalogo los normaliza a USD despues.
  */
 @Component
 public class HotelbedsHotelAdapter implements ProveedorHoteles {
@@ -30,10 +34,13 @@ public class HotelbedsHotelAdapter implements ProveedorHoteles {
     private final ProveedoresProperties props;
     private final MockProveedores mock;
     private final RestClient http;
+    private final CircuitBreaker circuito;
 
-    public HotelbedsHotelAdapter(ProveedoresProperties props, MockProveedores mock, RestClient.Builder builder) {
+    public HotelbedsHotelAdapter(ProveedoresProperties props, MockProveedores mock, RestClient.Builder builder,
+                                 CircuitBreakerRegistry registry) {
         this.props = props;
         this.mock = mock;
+        this.circuito = registry.circuitBreaker("hotelbeds");
         this.http = builder.clone()
                 .baseUrl(props.hotelbeds().url())
                 .requestFactory(HttpClients.conTimeouts(Duration.ofSeconds(5), Duration.ofSeconds(20)))
@@ -54,35 +61,45 @@ public class HotelbedsHotelAdapter implements ProveedorHoteles {
     public List<OfertaProveedor> buscar(String destino, LocalDate checkIn, LocalDate checkOut, int pasajeros) {
         if (!activo()) return mock.hoteles(destino, checkIn, checkOut, pasajeros);
         try {
-            Map<String, Object> body = Map.of(
-                    "stay", Map.of("checkIn", checkIn.toString(), "checkOut", checkOut.toString()),
-                    "occupancies", List.of(Map.of("rooms", 1, "adults", pasajeros, "children", 0)),
-                    "destination", Map.of("code", props.hotelbeds().destino(destino)));
-            JsonNode resp = http.post().uri("/hotel-api/1.0/hotels")
-                    .header("Api-key", props.hotelbeds().hotelKey()).header("X-Signature", firma())
-                    .contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(JsonNode.class);
-
-            long noches = Math.max(1, ChronoUnit.DAYS.between(checkIn, checkOut));
-            List<OfertaProveedor> out = new ArrayList<>();
-            for (JsonNode h : resp.path("hotels").path("hotels")) {
-                if (out.size() == 5) break;
-                JsonNode rate = h.path("rooms").path(0).path("rates").path(0);
-                BigDecimal total = new BigDecimal(rate.path("net").asText(h.path("minRate").asText("0")));
-                out.add(new OfertaProveedor(rate.path("rateKey").asText(), TipoProducto.HOTEL, "HOTELBEDS",
-                        h.path("name").asText(), destino,
-                        total.divide(BigDecimal.valueOf(noches), 2, RoundingMode.HALF_UP),
-                        h.path("currency").asText("EUR"), "noches", 0.5,
-                        Map.of("categoria", h.path("categoryName").asText(""),
-                                "habitacion", h.path("rooms").path(0).path("name").asText(""),
-                                "rateType", rate.path("rateType").asText(""))));
-            }
-            log.info("Hotelbeds devolvio {} hoteles en {}", out.size(), destino);
+            List<OfertaProveedor> out = new ArrayList<>(
+                    circuito.executeSupplier(() -> buscarEnHotelbeds(destino, checkIn, checkOut, pasajeros)));
+            if (out.isEmpty()) return mock.hoteles(destino, checkIn, checkOut, pasajeros);
             out.add(mock.hoteles(destino, checkIn, checkOut, pasajeros).getLast()); // hotel de demo de Saga
-            return out.size() == 1 ? mock.hoteles(destino, checkIn, checkOut, pasajeros) : out;
+            return out;
+        } catch (CallNotPermittedException e) {
+            log.warn("Circuito de Hotelbeds ABIERTO: uso datos simulados sin llamar a la API");
+            return mock.hoteles(destino, checkIn, checkOut, pasajeros);
         } catch (Exception e) {
             log.warn("Hotelbeds no disponible ({}), uso datos simulados", e.getMessage());
             return mock.hoteles(destino, checkIn, checkOut, pasajeros);
         }
+    }
+
+    private List<OfertaProveedor> buscarEnHotelbeds(String destino, LocalDate checkIn, LocalDate checkOut, int pasajeros) {
+        Map<String, Object> ocupacion = Map.of("rooms", 1, "adults", pasajeros, "children", 0);
+        Map<String, Object> body = Map.of(
+                "stay", Map.of("checkIn", checkIn.toString(), "checkOut", checkOut.toString()),
+                "occupancies", List.of(ocupacion),
+                "destination", Map.of("code", props.hotelbeds().destino(destino)));
+        JsonNode resp = http.post().uri("/hotel-api/1.0/hotels")
+                .header("Api-key", props.hotelbeds().hotelKey()).header("X-Signature", firma())
+                .contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(JsonNode.class);
+
+        long noches = Math.max(1, ChronoUnit.DAYS.between(checkIn, checkOut));
+        List<OfertaProveedor> out = new ArrayList<>();
+        for (JsonNode h : resp.path("hotels").path("hotels")) {
+            if (out.size() == 5) break;
+            JsonNode rate = h.path("rooms").path(0).path("rates").path(0);
+            BigDecimal total = new BigDecimal(rate.path("net").asText(h.path("minRate").asText("0")));
+            out.add(new OfertaProveedor(rate.path("rateKey").asText(), TipoProducto.HOTEL, "HOTELBEDS",
+                    h.path("name").asText(), destino,
+                    total.divide(BigDecimal.valueOf(noches), 2, RoundingMode.HALF_UP),
+                    h.path("currency").asText("EUR"), "noches", 0.5,
+                    Map.of("categoria", h.path("categoryName").asText(""),
+                            "habitacion", h.path("rooms").path(0).path("name").asText(""))));
+        }
+        log.info("Hotelbeds devolvio {} hoteles en {}", out.size(), destino);
+        return out;
     }
 
     @Override
@@ -94,9 +111,10 @@ public class HotelbedsHotelAdapter implements ProveedorHoteles {
                 paxes.add(Map.of("roomId", 1, "type", "AD",
                         "name", i == 0 ? t.nombre() : "Acompanante", "surname", t.apellido()));
             }
+            Map<String, Object> habitacion = Map.of("rateKey", ofertaId, "paxes", paxes);
             Map<String, Object> body = Map.of(
                     "holder", Map.of("name", t.nombre(), "surname", t.apellido()),
-                    "rooms", List.of(Map.of("rateKey", ofertaId, "paxes", paxes)),
+                    "rooms", List.of(habitacion),
                     "clientReference", reservaRef,
                     "remark", "Reserva de prueba TravelHub (TP UADE)",
                     "tolerance", 2);

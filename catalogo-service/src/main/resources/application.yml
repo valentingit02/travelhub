@@ -10,15 +10,20 @@ spring:
     password: ${DB_PASSWORD:travelhub}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none          # el esquema lo maneja Flyway (src/main/resources/db/migration)
     open-in-view: false
+  flyway:
+    enabled: true
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
     username: guest
     password: guest
+    template:
+      observation-enabled: true      # propaga la traza por RabbitMQ
     listener:
       simple:
+        observation-enabled: true
         default-requeue-rejected: false   # tras los reintentos, el mensaje va a la DLQ
         retry:
           enabled: true
@@ -36,6 +41,15 @@ spring:
       time-to-live: 15m      # las tarifas no se cachean mas de unos minutos
 
 travelhub:
+  ofertas:
+    vigencia: 60m            # tiempo para reservar una oferta sin volver a buscar
+  tipo-cambio:
+    url: ${TIPO_CAMBIO_URL:https://api.frankfurter.dev/v1}
+    vigencia: 6h
+    respaldo:                # USD por unidad; solo si la API no responde (actualizar antes de la demo)
+      EUR: 1.10
+      GBP: 1.30
+      BRL: 0.18
   proveedores:
     modo: ${PROVEEDORES_MODO:mock}   # mock | real
     duffel:
@@ -55,14 +69,39 @@ travelhub:
         USH: USH
         MAD: MAD
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      duffel:
+        base-config: default
+      hotelbeds:
+        base-config: default
+      tipoCambio:
+        base-config: default
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,circuitbreakers,circuitbreakerevents
   health:
     redis:
       enabled: false   # Redis es opcional: si se cae, el servicio sigue sano
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
 
 springdoc:
   swagger-ui:
@@ -70,4 +109,4 @@ springdoc:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{correlationId:-sin-id}] %logger{36} - %msg%n"

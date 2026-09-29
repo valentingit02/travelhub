@@ -1,6 +1,7 @@
 package com.travelhub.reservas.reserva;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,12 @@ public class ReservaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Reserva un paquete: cotiza, reserva en proveedores (Saga) y solicita el pago")
-    public ReservaDtos.Response reservar(@Valid @RequestBody ReservaDtos.Request request) {
-        return facade.reservarPaquete(request);
+    @Operation(summary = "Reserva un paquete: verifica precios en el catalogo, cotiza, reserva en proveedores (Saga) y solicita el pago")
+    public ReservaDtos.Response reservar(
+            @Valid @RequestBody ReservaDtos.Request request,
+            @Parameter(description = "Clave unica por intento de compra: si se repite, devuelve la reserva ya creada")
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        return facade.reservarPaquete(request, idempotencyKey);
     }
 
     @GetMapping

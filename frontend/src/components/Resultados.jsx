@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import SearchBox from './SearchBox.jsx'
-import { TIPOS, DESTINOS, ciudad, dinero, estimado, fecha, noches, unidades } from '../data.js'
+import { DESTINOS, DETALLE_OCULTO, TIPOS, ciudad, dinero, estimado, fecha, noches, unidades } from '../data.js'
 
 const TAB_POR_FOCO = { PAQUETE: 'vuelos', VUELO: 'vuelos', HOTEL: 'hoteles', AUTO: 'autos', EXCURSION: 'excursiones' }
 const ORDEN_TABS = ['vuelos', 'hoteles', 'autos', 'excursiones']
@@ -39,25 +39,31 @@ export default function Resultados({ busqueda, onBuscar, resultados, buscando, p
       </div>
 
       <div className="contenedor">
-        <div className="res-cabecera" style={{ background: destino?.grad }}>
+        <div className="res-cabecera" style={{ '--c': destino?.color, '--t': destino?.tono }}>
           <div>
-            <small>{destino?.pais}</small>
-            <h2>{destino?.emoji} {ciudad(busqueda.destino)}</h2>
-            <p>{fecha(busqueda.desde)} → {fecha(busqueda.hasta)} · {noches(busqueda.desde, busqueda.hasta)} noches · {busqueda.pax} pasajero{busqueda.pax > 1 ? 's' : ''}</p>
+            <small>{destino?.region} · {destino?.pais}</small>
+            <h2>{ciudad(busqueda.destino)}</h2>
           </div>
+          <dl>
+            <div><dt>Ida</dt><dd>{fecha(busqueda.desde)}</dd></div>
+            <div><dt>Vuelta</dt><dd>{fecha(busqueda.hasta)}</dd></div>
+            <div><dt>Noches</dt><dd>{noches(busqueda.desde, busqueda.hasta)}</dd></div>
+            <div><dt>Viajeros</dt><dd>{busqueda.pax}</dd></div>
+          </dl>
         </div>
 
-        <div className="tabs">
+        <div className="tabs" role="tablist">
           {ORDEN_TABS.map((k) => {
             const tipo = TIPOS[TIPO_DE_TAB[k]]
             const items = resultados?.[k] || []
             const min = items.length ? Math.min(...items.map((p) => Number(p.precioBase))) : null
             const elegidos = paquete.filter((p) => p.tipo === TIPO_DE_TAB[k]).length
             return (
-              <button key={k} className={`tab ${tab === k ? 'on' : ''}`} onClick={() => setTab(k)}>
+              <button key={k} role="tab" aria-selected={tab === k} className={`tab ${tab === k ? 'on' : ''}`}
+                style={{ '--tc': tipo.color }} onClick={() => setTab(k)}>
                 <span className="tab-icono">{tipo.icono}</span>
                 <span className="tab-texto">
-                  <b>{tipo.plural} {elegidos > 0 && <span className="check">✓</span>}</b>
+                  <b>{tipo.plural}{elegidos > 0 && <span className="check"> ✓</span>}</b>
                   <small>{buscando ? 'Buscando…' : min != null ? `desde ${dinero(min, items[0].moneda)}` : 'Sin resultados'}</small>
                 </span>
               </button>
@@ -67,7 +73,7 @@ export default function Resultados({ busqueda, onBuscar, resultados, buscando, p
 
         <div className="res-layout">
           <aside className="filtros">
-            <h4>Ordenar por</h4>
+            <h4>Ordenar</h4>
             {[['precio', 'Menor precio'], ['precio-desc', 'Mayor precio'], ['disponibilidad', 'Más disponibilidad']].map(([v, t]) => (
               <label key={v} className="radio">
                 <input type="radio" name="orden" checked={orden === v} onChange={() => setOrden(v)} /> {t}
@@ -87,21 +93,20 @@ export default function Resultados({ busqueda, onBuscar, resultados, buscando, p
                 {todosProveedores.map((pr) => (
                   <label key={pr} className="radio">
                     <input type="checkbox" checked={proveedores.includes(pr)}
-                      onChange={() => setProveedores((x) => x.includes(pr) ? x.filter((y) => y !== pr) : [...x, pr])} /> {pr}
+                      onChange={() => setProveedores((x) => x.includes(pr) ? x.filter((y) => y !== pr) : [...x, pr])} /> {pr === 'MOCK' ? 'Simulado' : pr}
                   </label>
                 ))}
               </>
             )}
-            <div className="filtro-nota">💡 Los precios son base. En tu paquete vas a ver el precio final con temporada, anticipación y ocupación.</div>
+            <p className="filtro-nota">Precios base en USD. En tu paquete ves el precio final con temporada, anticipación y ocupación.</p>
           </aside>
 
           <section className="lista">
             {buscando && [1, 2, 3].map((i) => <div key={i} className="card-res esqueleto" />)}
             {!buscando && resultados && !visibles.length && (
               <div className="vacio">
-                <span>🔎</span>
-                <b>No encontramos {TIPOS[TIPO_DE_TAB[tab]].plural.toLowerCase()} con esos filtros</b>
-                <p>Probá cambiar las fechas o quitar filtros.</p>
+                <b>No hay {TIPOS[TIPO_DE_TAB[tab]].plural.toLowerCase()} con esos filtros</b>
+                <p>Probá con otras fechas o quitá filtros.</p>
               </div>
             )}
             {!buscando && visibles.map((p) => (
@@ -115,13 +120,13 @@ export default function Resultados({ busqueda, onBuscar, resultados, buscando, p
         <div className="barra-paquete">
           <div className="contenedor barra-in">
             <div className="barra-iconos">
-              {paquete.map((p) => <span key={p.id} title={p.nombre}>{TIPOS[p.tipo].icono}</span>)}
+              {paquete.map((p) => <span key={p.id} title={p.nombre} style={{ background: TIPOS[p.tipo].color }}>{TIPOS[p.tipo].icono}</span>)}
             </div>
             <div className="barra-texto">
               <b>Tu paquete · {paquete.length} producto{paquete.length > 1 ? 's' : ''}</b>
-              <small>Total estimado {dinero(totalPaquete, paquete[0].moneda)}{new Set(paquete.map((p) => p.tipo)).size >= 2 ? ' · incluye 7 % off por paquete' : ''}</small>
+              <small>Estimado {dinero(totalPaquete, 'USD')}{new Set(paquete.map((p) => p.tipo)).size >= 2 ? ' · incluye 7 % off' : ''}</small>
             </div>
-            <button className="btn btn-acento" onClick={verPaquete}>Ver mi paquete →</button>
+            <button className="btn btn-acento" onClick={verPaquete}>Ver paquete →</button>
           </div>
         </div>
       )}
@@ -131,36 +136,38 @@ export default function Resultados({ busqueda, onBuscar, resultados, buscando, p
 
 function Tarjeta({ p, busqueda, elegido, alternar }) {
   const tipo = TIPOS[p.tipo]
-  const detalle = Object.entries(p.detalle || {}).filter(([k]) => k !== 'nota' && k !== 'rateType')
+  const detalle = Object.entries(p.detalle || {}).filter(([k]) => !DETALLE_OCULTO.has(k))
   const u = unidades(p.tipo, busqueda)
   const ultimos = p.ocupacion >= 0.75
   const esDemoFalla = p.id === 'MOCK-HOTEL-FALLA'
   return (
-    <article className={`card-res ${elegido ? 'elegida' : ''}`}>
-      <div className="card-foto" style={{ background: `linear-gradient(135deg, ${tipo.color}, ${tipo.color}99)` }}>
-        <span>{tipo.icono}</span>
+    <article className={`card-res ${elegido ? 'elegida' : ''}`} style={{ '--tc': tipo.color }}>
+      <div className="card-marca">
+        <span className="card-icono">{tipo.icono}</span>
+        <span className="card-tipo">{tipo.singular}</span>
         {p.tipo === 'HOTEL' && p.detalle?.estrellas && <span className="estrellas">{'★'.repeat(Number(p.detalle.estrellas))}</span>}
       </div>
       <div className="card-info">
         <div className="card-proveedor">{p.proveedor === 'MOCK' ? 'Simulado' : p.proveedor}</div>
         <h3>{p.nombre}</h3>
         <div className="chips">
-          {detalle.map(([k, v]) => <span key={k} className="chip">{k}: {v}</span>)}
+          {detalle.map(([k, v]) => <span key={k} className="chip"><i>{k}</i> {v}</span>)}
         </div>
         {p.tipo !== 'EXCURSION' && (
           <div className="ocupacion">
             <div className="ocupacion-barra"><span style={{ width: `${Math.round(p.ocupacion * 100)}%` }} /></div>
-            <small className={ultimos ? 'alerta' : ''}>{ultimos ? '🔥 ¡Quedan pocos lugares!' : `${Math.round(p.ocupacion * 100)} % ocupado`}</small>
+            <small className={ultimos ? 'alerta' : ''}>{ultimos ? 'Quedan pocos lugares' : `${Math.round(p.ocupacion * 100)} % ocupado`}</small>
           </div>
         )}
-        {esDemoFalla && <div className="aviso-demo">⚠️ Demo: este hotel siempre rechaza la reserva para mostrar la compensación (Saga).</div>}
+        {esDemoFalla && <div className="aviso-demo">Demo: este hotel siempre rechaza la reserva para mostrar la compensación (Saga).</div>}
       </div>
       <div className="card-precio">
-        <small>Precio {tipo.unidad}</small>
+        <small>{tipo.unidad}</small>
         <div className="precio-grande">{dinero(p.precioBase, p.moneda)}</div>
-        <small>{u} {p.unidad} · total est. <b>{dinero(estimado(p, busqueda), p.moneda)}</b></small>
+        {p.detalle?.precioOriginal && <small className="original">Original {p.detalle.precioOriginal}</small>}
+        <small>{u} {p.unidad} · <b>{dinero(estimado(p, busqueda), p.moneda)}</b></small>
         <button className={`btn ${elegido ? 'btn-ok' : 'btn-primario'}`} onClick={() => alternar(p)}>
-          {elegido ? '✓ Agregado' : 'Agregar al paquete'}
+          {elegido ? '✓ En el paquete' : 'Agregar'}
         </button>
         {elegido && <button className="link" onClick={() => alternar(p)}>Quitar</button>}
       </div>

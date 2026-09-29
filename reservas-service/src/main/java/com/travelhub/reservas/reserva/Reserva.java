@@ -47,6 +47,10 @@ public class Reserva {
     @Column(name = "creada_en", nullable = false)
     private Instant creadaEn = Instant.now();
 
+    /** Clave enviada por el cliente en el header Idempotency-Key. */
+    @Column(name = "idempotency_key", length = 80, unique = true)
+    private String idempotencyKey;
+
     // EAGER a proposito: la Saga trabaja fuera de una transaccion larga
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id")
@@ -72,9 +76,13 @@ public class Reserva {
         this.moneda = moneda;
     }
 
+    public void asignarClaveIdempotencia(String clave) {
+        this.idempotencyKey = clave;
+    }
+
     public void cambiarEstado(EstadoReserva nuevo, String motivo) {
         this.estado = nuevo;
-        if (motivo != null) this.motivo = motivo;
+        if (motivo != null) this.motivo = motivo.length() > 300 ? motivo.substring(0, 300) : motivo;
     }
 
     public String referencia() { return "RES-" + id; }
@@ -90,5 +98,6 @@ public class Reserva {
     public String getMoneda() { return moneda; }
     public String getMotivo() { return motivo; }
     public Instant getCreadaEn() { return creadaEn; }
+    public String getIdempotencyKey() { return idempotencyKey; }
     public List<ItemReserva> getItems() { return items; }
 }

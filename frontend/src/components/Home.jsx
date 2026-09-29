@@ -2,48 +2,52 @@ import SearchBox from './SearchBox.jsx'
 import { DESTINOS } from '../data.js'
 
 const BENEFICIOS = [
-  ['💡', 'Precios transparentes', 'Te mostramos cada factor que forma el precio final.'],
-  ['🧳', 'Armá tu paquete', 'Combiná vuelo, hotel, auto y excursiones y ahorrá un 7 %.'],
-  ['🤖', 'Recomendaciones con IA', 'Excursiones sugeridas según tus gustos y el clima.'],
-  ['🔒', 'Reserva protegida', 'Si algo falla, cancelamos todo automáticamente.']
+  ['01', 'Precio transparente', 'Ves cada factor que forma el precio: temporada, anticipación y ocupación.'],
+  ['02', 'Precio garantizado', 'El precio lo verifica el servidor al reservar. Lo que ves es lo que pagás.'],
+  ['03', 'Paquete con descuento', 'Combiná dos o más productos y el total baja un 7 %.'],
+  ['04', 'Reserva protegida', 'Si un proveedor falla, cancelamos todo automáticamente y no se cobra.']
 ]
 
 export default function Home({ busqueda, onBuscar }) {
+  const destinos = Object.entries(DESTINOS)
   return (
     <>
       <section className="hero">
-        <div className="contenedor">
-          <h1>Tu próximo viaje empieza acá</h1>
-          <p className="hero-sub">Vuelos, alojamientos, autos y excursiones en un solo lugar. Buscá sin registrarte.</p>
+        <div className="contenedor hero-in">
+          <p className="sobretitulo">Vuelos · Alojamientos · Autos · Excursiones</p>
+          <h1>Viajá a donde quieras,<br /><span>pagá lo que corresponde.</span></h1>
+          <p className="hero-sub">Armá tu viaje en un solo lugar. Buscar no requiere cuenta.</p>
           <SearchBox inicial={busqueda} onBuscar={onBuscar} />
         </div>
       </section>
 
       <section className="contenedor beneficios">
-        {BENEFICIOS.map(([icono, titulo, texto]) => (
-          <div key={titulo} className="beneficio">
-            <span className="beneficio-icono">{icono}</span>
-            <div><b>{titulo}</b><p>{texto}</p></div>
+        {BENEFICIOS.map(([n, titulo, texto]) => (
+          <div key={n} className="beneficio">
+            <span className="beneficio-num">{n}</span>
+            <b>{titulo}</b>
+            <p>{texto}</p>
           </div>
         ))}
       </section>
 
       <section className="contenedor">
         <div className="seccion-titulo">
-          <h2>Destinos que te van a enamorar</h2>
-          <p>Elegí uno y te mostramos todo lo disponible para tus fechas.</p>
+          <span className="sobretitulo oscuro">Destinos</span>
+          <h2>Dónde empezar</h2>
         </div>
         <div className="destinos">
-          {Object.entries(DESTINOS).map(([k, d], i) => (
-            <button key={k} className={`destino ${i === 0 ? 'destacado' : ''}`} style={{ background: d.grad }}
-              onClick={() => onBuscar({ ...busqueda, destino: k })}>
-              <span className="destino-emoji">{d.emoji}</span>
+          {destinos.map(([k, d], i) => (
+            <button key={k} className={`destino ${i === 0 ? 'destacado' : ''}`}
+              style={{ '--c': d.color, '--t': d.tono }} onClick={() => onBuscar({ ...busqueda, destino: k })}>
+              <span className="destino-num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="destino-codigo">{k}</span>
               <span className="destino-info">
-                <small>{d.pais}</small>
+                <small>{d.region} · {d.pais}</small>
                 <b>{d.nombre}</b>
                 <span>{d.tag}</span>
               </span>
-              <span className="destino-cta">Ver ofertas →</span>
+              <span className="destino-cta">Ver disponibilidad →</span>
             </button>
           ))}
         </div>
@@ -52,11 +56,11 @@ export default function Home({ busqueda, onBuscar }) {
       <section className="contenedor">
         <div className="promo">
           <div>
-            <span className="promo-tag">PAQUETES</span>
-            <h3>Combiná 2 o más productos y pagá 7 % menos</h3>
-            <p>Reservá con anticipación y sumá hasta un 15 % extra de descuento.</p>
+            <span className="sobretitulo oscuro">Paquetes</span>
+            <h3>Combiná y pagá menos</h3>
+            <p>7 % off con dos o más productos, y hasta 15 % más si reservás con anticipación.</p>
           </div>
-          <button className="btn btn-acento" onClick={() => onBuscar(busqueda)}>Armar mi paquete</button>
+          <button className="btn btn-primario" onClick={() => onBuscar(busqueda)}>Armar mi paquete</button>
         </div>
       </section>
     </>

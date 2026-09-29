@@ -1,10 +1,10 @@
 // Todas las llamadas pasan por el gateway (mismo origen): no hace falta CORS.
-async function req(method, url, body) {
+async function req(method, url, body, headers = {}) {
   let res
   try {
     res = await fetch(url, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : {},
+      headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
       body: body ? JSON.stringify(body) : undefined
     })
   } catch {
@@ -15,10 +15,15 @@ async function req(method, url, body) {
   try { data = text ? JSON.parse(text) : null } catch { data = null }
   if (!res.ok) {
     const detalle = data?.detalles?.length ? ` (${data.detalles.join(', ')})` : ''
-    throw new Error((data?.mensaje || `Error ${res.status} en ${url.split('?')[0]}`) + detalle)
+    const error = new Error((data?.mensaje || `Error ${res.status} en ${url.split('?')[0]}`) + detalle)
+    error.status = res.status
+    throw error
   }
   return data
 }
+
+export const nuevaClave = () =>
+  (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`)
 
 export const api = {
   buscar: ({ origen, destino, desde, hasta, pax }) =>
@@ -26,7 +31,8 @@ export const api = {
   cotizarPaquete: (items) => req('POST', '/api/precios/cotizar-paquete', { items }),
   viajeros: (email) => req('GET', `/api/viajeros${email ? `?email=${encodeURIComponent(email)}` : ''}`),
   crearViajero: (v) => req('POST', '/api/viajeros', v),
-  reservar: (r) => req('POST', '/api/reservas', r),
+  // Solo se mandan los ids: el precio lo verifica el servidor contra el catálogo
+  reservar: (r, clave) => req('POST', '/api/reservas', r, { 'Idempotency-Key': clave }),
   reservas: (viajeroId) => req('GET', `/api/reservas?viajeroId=${viajeroId}`),
   cancelar: (id) => req('DELETE', `/api/reservas/${id}`),
   recomendaciones: (p) => req('GET', `/api/ia/recomendaciones?${new URLSearchParams(p)}`),

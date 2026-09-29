@@ -10,15 +10,20 @@ spring:
     password: ${DB_PASSWORD:travelhub}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none          # el esquema lo maneja Flyway
     open-in-view: false
+  flyway:
+    enabled: true
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
     username: guest
     password: guest
+    template:
+      observation-enabled: true
     listener:
       simple:
+        observation-enabled: true
         default-requeue-rejected: false
         retry:
           enabled: true
@@ -36,6 +41,12 @@ management:
     web:
       exposure:
         include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
 
 springdoc:
   swagger-ui:
@@ -43,4 +54,4 @@ springdoc:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{correlationId:-sin-id}] %logger{36} - %msg%n"

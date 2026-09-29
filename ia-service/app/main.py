@@ -19,13 +19,15 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(nam
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if RABBIT_HABILITADO:
-        from .mensajeria import iniciar_consumidor
+        from .mensajeria import iniciar_consumidor, reentrenar
+        reentrenar()          # arranca con lo aprendido en ejecuciones anteriores
         iniciar_consumidor()
     yield
 
 
-app = FastAPI(title="TravelHub IA", version="1.0",
-              description="Deteccion de anomalias de precio, resumen del viaje con LLM y recomendaciones.",
+app = FastAPI(title="TravelHub IA", version="2.0",
+              description="Deteccion de anomalias de precio (con historial real), resumen del viaje con LLM "
+                          "y recomendaciones.",
               lifespan=lifespan)
 
 
@@ -33,6 +35,8 @@ class EvaluarRequest(BaseModel):
     tipoProducto: str = Field(examples=["AUTO"])
     precio: float = Field(gt=0, examples=[1.0])
     moneda: str = "USD"
+    destino: Optional[str] = Field(default=None, examples=["BRC"])
+    precioAnterior: Optional[float] = Field(default=None, gt=0, examples=[120.0])
     productoRef: Optional[str] = None
 
 
@@ -55,21 +59,34 @@ class ResumenRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "UP"}
+    return {"status": "UP", "modelo": detector.version}
 
 
 @app.post("/api/ia/anomalias/evaluar", tags=["Anomalias"])
 def evaluar(req: EvaluarRequest):
     inicio = time.perf_counter()
-    r = detector.evaluar(req.tipoProducto, req.precio)
-    db.guardar(req.productoRef, req.tipoProducto, req.precio, req.moneda, r)
+    r = detector.evaluar(req.tipoProducto, req.precio, req.destino, req.precioAnterior)
+    db.guardar(req.productoRef, req.tipoProducto, req.precio, req.moneda, r, req.destino, req.precioAnterior)
     return {"esAnomalia": r.es_anomalia, "score": round(r.score, 4), "z": round(r.z, 2), "motivo": r.motivo,
-            "modeloVersion": r.modelo_version, "latenciaMs": round((time.perf_counter() - inicio) * 1000, 2)}
+            "fuente": r.fuente, "modeloVersion": r.modelo_version,
+            "latenciaMs": round((time.perf_counter() - inicio) * 1000, 2)}
 
 
 @app.get("/api/ia/anomalias/historial", tags=["Anomalias"])
 def historial(limite: int = 50):
     return db.historial(limite)
+
+
+@app.get("/api/ia/anomalias/modelo", tags=["Anomalias"])
+def modelo():
+    """Que aprendio el modelo: distribucion de referencia y grupos (tipo+destino) entrenados con historial."""
+    return detector.resumen()
+
+
+@app.post("/api/ia/anomalias/reentrenar", tags=["Anomalias"])
+def reentrenar():
+    grupos = detector.entrenar_con_historial(db.observaciones())
+    return {"gruposEntrenados": grupos, "modelo": detector.resumen()}
 
 
 @app.post("/api/ia/resumen", tags=["Resumen"])
