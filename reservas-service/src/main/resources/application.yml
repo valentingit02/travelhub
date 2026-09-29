@@ -10,15 +10,20 @@ spring:
     password: ${DB_PASSWORD:travelhub}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none          # el esquema lo maneja Flyway
     open-in-view: false
+  flyway:
+    enabled: true
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
     username: guest
     password: guest
+    template:
+      observation-enabled: true
     listener:
       simple:
+        observation-enabled: true
         default-requeue-rejected: false
         retry:
           enabled: true
@@ -30,12 +35,43 @@ travelhub:
   servicios:
     catalogo: ${CATALOGO_URL:http://localhost:8081}
     precios: ${PRECIOS_URL:http://localhost:8082}
+  outbox:
+    intervalo-ms: 1000
+  reservas:
+    vencimiento: ${RESERVAS_VENCIMIENTO:15m}   # PENDIENTE sin pago despues de esto -> FALLIDA
+    revision-ms: 60000
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        # solo los errores de red cuentan como falla (no los rechazos de negocio como un 409)
+        record-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+    instances:
+      catalogo:
+        base-config: default
+      precios:
+        base-config: default
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,circuitbreakers,circuitbreakerevents
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
 
 springdoc:
   swagger-ui:
@@ -43,4 +79,4 @@ springdoc:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{correlationId:-sin-id}] %logger{36} - %msg%n"

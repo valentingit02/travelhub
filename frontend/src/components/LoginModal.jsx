@@ -48,11 +48,9 @@ export default function LoginModal({ onOk, onClose }) {
     <div className="modal-fondo" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" role="dialog" aria-modal="true">
         <button className="modal-cerrar" onClick={onClose} aria-label="Cerrar">×</button>
-        <div className="modal-cabecera">
-          <span className="logo-icono">✈</span>
-          <h3>{modo === 'ingresar' ? 'Ingresá a TravelHub' : 'Creá tu cuenta'}</h3>
-          <p>Para reservar necesitamos saber quién viaja.</p>
-        </div>
+        <span className="sobretitulo oscuro">TravelHub</span>
+        <h3>{modo === 'ingresar' ? 'Ingresá para reservar' : 'Creá tu cuenta'}</h3>
+        <p className="gris">Buscar es libre. Para reservar necesitamos saber quién viaja.</p>
         <div className="modal-tabs">
           <button className={modo === 'ingresar' ? 'on' : ''} onClick={() => setModo('ingresar')}>Ingresar</button>
           <button className={modo === 'registrar' ? 'on' : ''} onClick={() => setModo('registrar')}>Crear cuenta</button>

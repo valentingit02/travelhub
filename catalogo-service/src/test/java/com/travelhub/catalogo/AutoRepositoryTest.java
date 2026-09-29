@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/** Prueba de la capa de datos contra una base H2 en memoria. */
-@DataJpaTest
+/** Prueba de la capa de datos contra H2 en memoria (Flyway desactivado: el esquema lo crea Hibernate). */
+@DataJpaTest(properties = {"spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop"})
 @ActiveProfiles("test")
 class AutoRepositoryTest {
 
@@ -21,11 +21,14 @@ class AutoRepositoryTest {
     AutoRepository repo;
 
     @Test
-    void filtraPorDestinoYSoloActivos() {
+    void filtraPorDestinoYSoloActivosSinRevision() {
         repo.save(new Auto("BRC", CategoriaAuto.SUV, "Toyota", "SW4", 7, true, new BigDecimal("120"), "USD"));
         Auto inactivo = new Auto("BRC", CategoriaAuto.ECONOMICO, "Fiat", "Cronos", 5, false, new BigDecimal("45"), "USD");
         inactivo.desactivar();
         repo.save(inactivo);
+        Auto enRevision = new Auto("BRC", CategoriaAuto.COMPACTO, "VW", "Gol", 5, false, new BigDecimal("1"), "USD");
+        enRevision.marcarEnRevision();
+        repo.save(enRevision);
         repo.save(new Auto("MDZ", CategoriaAuto.COMPACTO, "VW", "Polo", 5, false, new BigDecimal("50"), "USD"));
 
         assertEquals(1, repo.findByDestinoIataIgnoreCaseAndActivoTrueAndEnRevisionFalse("brc").size());

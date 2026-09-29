@@ -16,7 +16,7 @@ jobs:
   java:
     name: java-build-y-tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -24,8 +24,26 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Compilar y testear (incluye Testcontainers)
+      - name: Compilar, testear y medir cobertura (incluye Testcontainers)
         run: mvn -B -ntp clean verify
+      - name: Resumen de cobertura
+        if: always()
+        run: |
+          echo "## Cobertura de tests (JaCoCo)" >> $GITHUB_STEP_SUMMARY
+          echo "| Modulo | Lineas cubiertas |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          for f in */target/site/jacoco/jacoco.csv; do
+            [ -f "$f" ] || continue
+            m=$(dirname $(dirname $(dirname $(dirname $f))))
+            awk -F, -v m="$m" 'NR>1 {c+=$9; t+=$8+$9} END {if (t>0) printf "| %s | %.1f %% |\n", m, 100*c/t}' "$f" >> $GITHUB_STEP_SUMMARY
+          done
+      - name: Reportes de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-jacoco
+          path: '**/target/site/jacoco/'
+          retention-days: 14
       - name: Reportes de tests si falla
         if: failure()
         uses: actions/upload-artifact@v4
@@ -54,7 +72,7 @@ jobs:
           RABBIT_HABILITADO: 'false'
         run: |
           python -m pytest -q
-          python evaluar_modelo.py
+          python evaluar_modelo.py | tee -a $GITHUB_STEP_SUMMARY
 
   frontend:
     name: frontend-build

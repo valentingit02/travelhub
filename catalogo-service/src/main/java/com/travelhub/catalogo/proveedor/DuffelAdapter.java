@@ -3,6 +3,9 @@ package com.travelhub.catalogo.proveedor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.travelhub.common.domain.TipoProducto;
 import com.travelhub.common.web.ExternalServiceException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,7 +21,8 @@ import java.util.*;
 
 /**
  * Patron Adapter: traduce la API de Duffel (vuelos, test mode) al modelo de TravelHub.
- * Si no hay token o Duffel falla, la busqueda cae al proveedor simulado.
+ * La busqueda esta protegida por un circuit breaker: si Duffel falla seguido, el circuito
+ * se abre y durante 30 s se usan datos simulados sin siquiera llamar a la API.
  */
 @Component
 public class DuffelAdapter implements ProveedorVuelos {
@@ -28,10 +32,13 @@ public class DuffelAdapter implements ProveedorVuelos {
     private final ProveedoresProperties props;
     private final MockProveedores mock;
     private final RestClient http;
+    private final CircuitBreaker circuito;
 
-    public DuffelAdapter(ProveedoresProperties props, MockProveedores mock, RestClient.Builder builder) {
+    public DuffelAdapter(ProveedoresProperties props, MockProveedores mock, RestClient.Builder builder,
+                         CircuitBreakerRegistry registry) {
         this.props = props;
         this.mock = mock;
+        this.circuito = registry.circuitBreaker("duffel");
         this.http = builder.clone()
                 .baseUrl(props.duffel().url())
                 .requestFactory(HttpClients.conTimeouts(Duration.ofSeconds(5), Duration.ofSeconds(25)))
@@ -50,34 +57,43 @@ public class DuffelAdapter implements ProveedorVuelos {
     public List<OfertaProveedor> buscar(String origen, String destino, LocalDate fecha, int pasajeros) {
         if (!activo()) return mock.vuelos(origen, destino, fecha, pasajeros);
         try {
-            List<Map<String, String>> pax = new ArrayList<>();
-            for (int i = 0; i < pasajeros; i++) pax.add(Map.of("type", "adult"));
-            Map<String, Object> body = Map.of("data", Map.of(
-                    "slices", List.of(Map.of("origin", origen, "destination", destino, "departure_date", fecha.toString())),
-                    "passengers", pax,
-                    "cabin_class", "economy"));
-
-            JsonNode resp = http.post().uri("/air/offer_requests?return_offers=true&supplier_timeout=10000")
-                    .contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(JsonNode.class);
-
-            List<OfertaProveedor> out = new ArrayList<>();
-            for (JsonNode o : resp.path("data").path("offers")) {
-                if (out.size() == 5) break;
-                BigDecimal total = new BigDecimal(o.path("total_amount").asText("0"));
-                BigDecimal porPersona = total.divide(BigDecimal.valueOf(pasajeros), 2, RoundingMode.HALF_UP);
-                JsonNode seg = o.path("slices").path(0).path("segments").path(0);
-                String aerolinea = o.path("owner").path("name").asText("Aerolinea");
-                out.add(new OfertaProveedor(o.path("id").asText(), TipoProducto.VUELO, "DUFFEL",
-                        aerolinea + " " + origen + "-" + destino, destino, porPersona,
-                        o.path("total_currency").asText("USD"), "pasajeros", 0.5,
-                        Map.of("salida", seg.path("departing_at").asText(""), "aerolinea", aerolinea)));
-            }
-            log.info("Duffel devolvio {} ofertas {}-{} {}", out.size(), origen, destino, fecha);
+            List<OfertaProveedor> out = circuito.executeSupplier(() -> buscarEnDuffel(origen, destino, fecha, pasajeros));
             return out.isEmpty() ? mock.vuelos(origen, destino, fecha, pasajeros) : out;
+        } catch (CallNotPermittedException e) {
+            log.warn("Circuito de Duffel ABIERTO: uso datos simulados sin llamar a la API");
+            return mock.vuelos(origen, destino, fecha, pasajeros);
         } catch (Exception e) {
             log.warn("Duffel no disponible ({}), uso datos simulados", e.getMessage());
             return mock.vuelos(origen, destino, fecha, pasajeros);
         }
+    }
+
+    private List<OfertaProveedor> buscarEnDuffel(String origen, String destino, LocalDate fecha, int pasajeros) {
+        List<Map<String, String>> pax = new ArrayList<>();
+        for (int i = 0; i < pasajeros; i++) pax.add(Map.of("type", "adult"));
+        Map<String, Object> slice = Map.of("origin", origen, "destination", destino, "departure_date", fecha.toString());
+        Map<String, Object> body = Map.of("data", Map.of(
+                "slices", List.of(slice),
+                "passengers", pax,
+                "cabin_class", "economy"));
+
+        JsonNode resp = http.post().uri("/air/offer_requests?return_offers=true&supplier_timeout=10000")
+                .contentType(MediaType.APPLICATION_JSON).body(body).retrieve().body(JsonNode.class);
+
+        List<OfertaProveedor> out = new ArrayList<>();
+        for (JsonNode o : resp.path("data").path("offers")) {
+            if (out.size() == 5) break;
+            BigDecimal total = new BigDecimal(o.path("total_amount").asText("0"));
+            BigDecimal porPersona = total.divide(BigDecimal.valueOf(pasajeros), 2, RoundingMode.HALF_UP);
+            JsonNode seg = o.path("slices").path(0).path("segments").path(0);
+            String aerolinea = o.path("owner").path("name").asText("Aerolinea");
+            out.add(new OfertaProveedor(o.path("id").asText(), TipoProducto.VUELO, "DUFFEL",
+                    aerolinea + " " + origen + "-" + destino, destino, porPersona,
+                    o.path("total_currency").asText("USD"), "pasajeros", 0.5,
+                    Map.of("salida", seg.path("departing_at").asText(""), "aerolinea", aerolinea)));
+        }
+        log.info("Duffel devolvio {} ofertas {}-{} {}", out.size(), origen, destino, fecha);
+        return out;
     }
 
     @Override
@@ -100,12 +116,13 @@ public class DuffelAdapter implements ProveedorVuelos {
                 pax.add(m);
                 i++;
             }
+            Map<String, Object> pago = Map.of("type", "balance",
+                    "currency", oferta.path("total_currency").asText(),
+                    "amount", oferta.path("total_amount").asText());
             Map<String, Object> body = Map.of("data", Map.of(
                     "type", "instant",
                     "selected_offers", List.of(ofertaId),
-                    "payments", List.of(Map.of("type", "balance",
-                            "currency", oferta.path("total_currency").asText(),
-                            "amount", oferta.path("total_amount").asText())),
+                    "payments", List.of(pago),
                     "passengers", pax,
                     "metadata", Map.of("reserva", reservaRef)));
             String orderId = http.post().uri("/air/orders").contentType(MediaType.APPLICATION_JSON).body(body)

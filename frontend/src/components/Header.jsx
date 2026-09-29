@@ -7,11 +7,12 @@ export default function Header({ vista, irA, viajero, cantidad, onLogin, onLogou
   return (
     <header className="topbar">
       <div className="contenedor topbar-in">
-        <button className="logo" onClick={() => irA('home')}>
-          <span className="logo-icono">✈</span> Travel<b>Hub</b>
+        <button className="logo" onClick={() => irA('home')} aria-label="Inicio">
+          <span className="logo-marca">T</span>
+          <span className="logo-texto">TravelHub</span>
         </button>
         <nav className="nav">
-          {link('home', 'Inicio')}
+          {link('home', 'Explorar')}
           {link('paquete', 'Mi paquete', cantidad > 0 && <span className="badge">{cantidad}</span>)}
           {link('viajes', 'Mis viajes')}
         </nav>
@@ -19,11 +20,11 @@ export default function Header({ vista, irA, viajero, cantidad, onLogin, onLogou
           {viajero ? (
             <>
               <span className="avatar">{viajero.nombre?.[0]?.toUpperCase()}</span>
-              <span className="usuario-nombre">Hola, {viajero.nombre}</span>
-              <button className="btn btn-fantasma btn-chico" onClick={onLogout}>Salir</button>
+              <span className="usuario-nombre">{viajero.nombre}</span>
+              <button className="btn btn-linea-claro btn-chico" onClick={onLogout}>Salir</button>
             </>
           ) : (
-            <button className="btn btn-claro btn-chico" onClick={onLogin}>👤 Ingresar</button>
+            <button className="btn btn-linea-claro btn-chico" onClick={onLogin}>Ingresar</button>
           )}
         </div>
       </div>

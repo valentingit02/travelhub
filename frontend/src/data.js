@@ -1,31 +1,31 @@
 export const DESTINOS = {
-  BRC: { nombre: 'Bariloche', pais: 'Argentina', emoji: '🏔️', tag: 'Nieve, lagos y chocolate', grad: 'linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 100%)' },
-  MDZ: { nombre: 'Mendoza', pais: 'Argentina', emoji: '🍇', tag: 'Vinos y alta montaña', grad: 'linear-gradient(135deg,#7c2d12 0%,#f59e0b 100%)' },
-  IGR: { nombre: 'Puerto Iguazú', pais: 'Argentina', emoji: '💦', tag: 'Cataratas y selva', grad: 'linear-gradient(135deg,#064e3b 0%,#10b981 100%)' },
-  USH: { nombre: 'Ushuaia', pais: 'Argentina', emoji: '🐧', tag: 'El fin del mundo', grad: 'linear-gradient(135deg,#0f172a 0%,#475569 100%)' },
-  MAD: { nombre: 'Madrid', pais: 'España', emoji: '🏛️', tag: 'Arte, tapas y noches largas', grad: 'linear-gradient(135deg,#9f1239 0%,#fb7185 100%)' }
+  BRC: { nombre: 'Bariloche', pais: 'Argentina', region: 'Patagonia', tag: 'Nieve, lagos y chocolate', color: '#1F4E79', tono: '#9CC3E6' },
+  MDZ: { nombre: 'Mendoza', pais: 'Argentina', region: 'Cuyo', tag: 'Vinos y alta montaña', color: '#7A2E3B', tono: '#E8B4A0' },
+  IGR: { nombre: 'Puerto Iguazú', pais: 'Argentina', region: 'Litoral', tag: 'Cataratas y selva', color: '#1E5B45', tono: '#A8D5BA' },
+  USH: { nombre: 'Ushuaia', pais: 'Argentina', region: 'Tierra del Fuego', tag: 'El fin del mundo', color: '#2F3E4E', tono: '#C9D6E3' },
+  MAD: { nombre: 'Madrid', pais: 'España', region: 'Europa', tag: 'Arte, tapas y noches largas', color: '#8A3B12', tono: '#F2C57C' }
 }
 
 export const ORIGENES = {
-  AEP: 'Buenos Aires (Aeroparque)',
-  EZE: 'Buenos Aires (Ezeiza)',
+  AEP: 'Buenos Aires · Aeroparque',
+  EZE: 'Buenos Aires · Ezeiza',
   COR: 'Córdoba',
   ROS: 'Rosario'
 }
 
 export const TIPOS = {
-  VUELO: { icono: '✈️', clave: 'vuelos', plural: 'Vuelos', unidad: 'por persona', color: '#2563eb' },
-  HOTEL: { icono: '🏨', clave: 'hoteles', plural: 'Hoteles', unidad: 'por noche', color: '#7c3aed' },
-  EXCURSION: { icono: '🥾', clave: 'excursiones', plural: 'Excursiones', unidad: 'por persona', color: '#059669' },
-  AUTO: { icono: '🚗', clave: 'autos', plural: 'Autos', unidad: 'por día', color: '#ea580c' }
+  VUELO: { icono: '✈', clave: 'vuelos', plural: 'Vuelos', singular: 'vuelo', unidad: 'por persona', color: '#1F4FD8' },
+  HOTEL: { icono: '⌂', clave: 'hoteles', plural: 'Alojamientos', singular: 'alojamiento', unidad: 'por noche', color: '#6B3FA0' },
+  EXCURSION: { icono: '⛰', clave: 'excursiones', plural: 'Excursiones', singular: 'excursión', unidad: 'por persona', color: '#0E7C5A' },
+  AUTO: { icono: '⛟', clave: 'autos', plural: 'Autos', singular: 'auto', unidad: 'por día', color: '#C2410C' }
 }
 
 export const FOCOS = [
-  { id: 'PAQUETE', icono: '🧳', label: 'Paquetes' },
-  { id: 'VUELO', icono: '✈️', label: 'Vuelos' },
-  { id: 'HOTEL', icono: '🏨', label: 'Alojamientos' },
-  { id: 'AUTO', icono: '🚗', label: 'Autos' },
-  { id: 'EXCURSION', icono: '🥾', label: 'Excursiones' }
+  { id: 'PAQUETE', label: 'Paquetes' },
+  { id: 'VUELO', label: 'Vuelos' },
+  { id: 'HOTEL', label: 'Alojamientos' },
+  { id: 'AUTO', label: 'Autos' },
+  { id: 'EXCURSION', label: 'Excursiones' }
 ]
 
 export const PREFERENCIAS = ['aventura', 'naturaleza', 'gastronomia', 'cultura']
@@ -54,3 +54,5 @@ export const fecha = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })
 
 export const ciudad = (iata) => DESTINOS[iata]?.nombre || iata
+
+export const DETALLE_OCULTO = new Set(['nota', 'rateType', 'precioOriginal'])

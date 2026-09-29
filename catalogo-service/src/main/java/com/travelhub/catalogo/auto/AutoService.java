@@ -62,6 +62,19 @@ public class AutoService {
         return (double) ocupados / todos.size();
     }
 
+    /** Verifica que el auto se pueda reservar en esas fechas (lo usa la verificacion de ofertas). */
+    @Transactional(readOnly = true)
+    public Auto verificarDisponible(Long id, LocalDate desde, LocalDate hasta) {
+        Auto a = buscar(id);
+        if (!a.isActivo() || a.isEnRevision()) {
+            throw new ConflictException("El auto " + a.getMarca() + " " + a.getModelo() + " no esta disponible para reservar");
+        }
+        if (bloqueos.contarSuperpuestos(id, desde, hasta) > 0) {
+            throw new ConflictException("El auto " + a.getMarca() + " " + a.getModelo() + " ya esta reservado en esas fechas");
+        }
+        return a;
+    }
+
     @Transactional(readOnly = true)
     public AutoResponse obtener(Long id) {
         return AutoResponse.from(buscar(id));
@@ -108,13 +121,7 @@ public class AutoService {
 
     public BloqueoAuto bloquear(Long autoId, LocalDate desde, LocalDate hasta, String reservaRef) {
         ValidadorFechas.validarRango(desde, hasta);
-        Auto a = buscar(autoId);
-        if (!a.isActivo() || a.isEnRevision()) {
-            throw new ConflictException("El auto " + autoId + " no esta disponible para reservar");
-        }
-        if (bloqueos.contarSuperpuestos(autoId, desde, hasta) > 0) {
-            throw new ConflictException("El auto " + autoId + " ya esta reservado en esas fechas");
-        }
+        verificarDisponible(autoId, desde, hasta);
         BloqueoAuto b = bloqueos.save(new BloqueoAuto(autoId, desde, hasta, reservaRef));
         log.info("Auto {} bloqueado {} a {} para {}", autoId, desde, hasta, reservaRef);
         return b;

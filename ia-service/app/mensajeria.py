@@ -1,7 +1,8 @@
 """
-Consumidor asincronico: escucha PrecioCambiado en RabbitMQ, evalua el precio y, si es
-anomalo, publica AnomaliaDetectada (el catalogo lo consume y deja el producto en revision).
-Corre en un hilo aparte y se reconecta solo si RabbitMQ se cae.
+Consumidor asincronico: escucha PrecioCambiado en RabbitMQ, evalua el precio (con su precio
+anterior y su destino) y, si es anomalo, publica AnomaliaDetectada. El catalogo deja el auto
+EN REVISION o bloquea la oferta del proveedor. Cada REENTRENAR_CADA precios normales, el
+modelo se reentrena con el historial real. Se reconecta solo si RabbitMQ se cae.
 """
 import json
 import logging
@@ -13,19 +14,34 @@ from .anomalias import detector
 from .config import (COLA_PRECIOS, DLX, EXCHANGE, RABBIT_HOST, RK_ANOMALIA, RK_PRECIO_CAMBIADO)
 
 log = logging.getLogger("ia.mensajeria")
+REENTRENAR_CADA = 25
+_normales = 0
+
+
+def reentrenar() -> int:
+    grupos = detector.entrenar_con_historial(db.observaciones())
+    log.info("Modelo reentrenado con historial real: %s grupos (%s)", grupos, detector.version)
+    return grupos
 
 
 def procesar(evento: dict):
     """Logica pura (testeable sin RabbitMQ). Devuelve el evento a publicar o None."""
+    global _normales
     precio = float(evento["precioNuevo"])
+    anterior = evento.get("precioAnterior")
+    anterior = float(anterior) if anterior is not None else None
     tipo = evento["tipoProducto"]
-    resultado = detector.evaluar(tipo, precio)
-    db.guardar(evento.get("productoRef"), tipo, precio, evento.get("moneda"), resultado)
-    log.info("Evaluado %s %s %.2f -> anomalia=%s (%s)", evento.get("productoRef"), tipo, precio,
-             resultado.es_anomalia, resultado.motivo)
+    destino = evento.get("destino")
+    resultado = detector.evaluar(tipo, precio, destino, anterior)
+    db.guardar(evento.get("productoRef"), tipo, precio, evento.get("moneda"), resultado, destino, anterior)
+    log.info("Evaluado %s %s %.2f (antes %s) -> anomalia=%s [%s] %s", evento.get("productoRef"), tipo, precio,
+             anterior, resultado.es_anomalia, resultado.fuente, resultado.motivo)
     if not resultado.es_anomalia:
+        _normales += 1
+        if _normales % REENTRENAR_CADA == 0:
+            reentrenar()
         return None
-    return {"productoRef": evento.get("productoRef"), "tipoProducto": tipo, "destino": evento.get("destino"),
+    return {"productoRef": evento.get("productoRef"), "tipoProducto": tipo, "destino": destino,
             "precio": precio, "moneda": evento.get("moneda"), "score": resultado.score, "motivo": resultado.motivo}
 
 

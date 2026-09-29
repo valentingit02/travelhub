@@ -30,10 +30,10 @@ export default function App() {
   }, [viajero])
 
   const cerrarToast = useCallback((id) => setToasts((t) => t.filter((x) => x.id !== id)), [])
-  const avisar = useCallback((texto, tipo = 'info') => {
+  const avisar = useCallback((texto, tipo = 'info', accion = null) => {
     const id = Date.now() + Math.random()
-    setToasts((t) => [...t, { id, texto, tipo }])
-    setTimeout(() => cerrarToast(id), 6000)
+    setToasts((t) => [...t, { id, texto, tipo, accion }])
+    setTimeout(() => cerrarToast(id), accion ? 10000 : 6000)
   }, [cerrarToast])
 
   const irA = (v) => { setVista(v); window.scrollTo({ top: 0, behavior: 'smooth' }) }
@@ -54,11 +54,13 @@ export default function App() {
     }
   }
 
+  // Tras un 409 (oferta vencida o bloqueada): se vacía el paquete y se busca de nuevo con precios frescos
+  const rebuscar = () => { setPaquete([]); buscar(busqueda) }
+
   const alternar = (p) => setPaquete((prev) => prev.some((x) => x.id === p.id)
     ? prev.filter((x) => x.id !== p.id)
     : [...prev.filter((x) => x.tipo !== p.tipo || p.tipo === 'EXCURSION'), p])
 
-  // Devuelve una promesa que se resuelve con el viajero cuando ingresa (o null si cierra el modal)
   const pedirLogin = () => new Promise((resolve) => {
     if (viajero) return resolve(viajero)
     esperaLogin.current = resolve
@@ -69,7 +71,7 @@ export default function App() {
     setLogin(false)
     if (v) {
       setViajero(v)
-      avisar(`¡Hola, ${v.nombre}!`, 'ok')
+      avisar(`Hola, ${v.nombre}.`, 'ok')
     }
     esperaLogin.current?.(v)
     esperaLogin.current = null
@@ -88,15 +90,16 @@ export default function App() {
         )}
         {vista === 'paquete' && (
           <Paquete paquete={paquete} busqueda={busqueda} viajero={viajero} quitar={alternar} irA={irA}
-            pedirLogin={pedirLogin} avisar={avisar} onReservado={() => { setPaquete([]); irA('viajes') }} />
+            pedirLogin={pedirLogin} avisar={avisar} rebuscar={rebuscar}
+            onReservado={() => { setPaquete([]); irA('viajes') }} />
         )}
         {vista === 'viajes' && <MisViajes viajero={viajero} pedirLogin={pedirLogin} avisar={avisar} irA={irA} />}
       </main>
 
       <footer className="pie">
         <div className="contenedor pie-in">
-          <span><b>✈ TravelHub</b> · Trabajo Práctico · Desarrollo de Aplicaciones II · UADE</span>
-          <span className="gris">Precios en modo demostración. No se realizan cobros reales.</span>
+          <span><b>TravelHub</b> · Desarrollo de Aplicaciones II · UADE</span>
+          <span className="gris">Modo demostración. No se realizan cobros reales.</span>
         </div>
       </footer>
 

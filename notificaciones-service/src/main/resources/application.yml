@@ -11,6 +11,7 @@ spring:
     password: guest
     listener:
       simple:
+        observation-enabled: true
         default-requeue-rejected: false
         retry:
           enabled: true
@@ -35,6 +36,12 @@ management:
   health:
     mail:
       enabled: false
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
 
 springdoc:
   swagger-ui:
@@ -42,4 +49,4 @@ springdoc:
 
 logging:
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-},%X{correlationId:-sin-id}] %logger{36} - %msg%n"

@@ -2,23 +2,29 @@ package com.travelhub.reservas.cliente;
 
 import com.travelhub.common.domain.TipoProducto;
 import com.travelhub.common.web.ExternalServiceException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Cliente REST hacia precios-service (cotizacion de paquete). */
+/** Cliente REST hacia precios-service (cotizacion de paquete), con circuit breaker "precios". */
 @Component
 public class PreciosClient {
 
     private final RestClient http;
+    private final CircuitBreaker circuito;
 
-    public PreciosClient(@Qualifier("preciosRestClient") RestClient http) {
+    public PreciosClient(@Qualifier("preciosRestClient") RestClient http, CircuitBreakerRegistry registry) {
         this.http = http;
+        this.circuito = registry.circuitBreaker("precios");
     }
 
     public record Item(TipoProducto tipoProducto, BigDecimal precioBase, String moneda, LocalDate fechaInicio,
@@ -33,10 +39,15 @@ public class PreciosClient {
 
     public Paquete cotizarPaquete(List<Item> items) {
         try {
-            return http.post().uri("/api/precios/cotizar-paquete").body(new PaqueteRequest(items))
-                    .retrieve().body(Paquete.class);
+            return circuito.executeSupplier(() -> http.post().uri("/api/precios/cotizar-paquete")
+                    .body(new PaqueteRequest(items)).retrieve().body(Paquete.class));
+        } catch (CallNotPermittedException e) {
+            throw new ExternalServiceException(
+                    "precios-service no disponible temporalmente (circuit breaker abierto). Proba en unos segundos.");
+        } catch (RestClientResponseException e) {
+            throw new IllegalArgumentException("No se pudo cotizar: " + Respuestas.mensaje(e));
         } catch (RestClientException e) {
-            throw new ExternalServiceException("precios-service no pudo cotizar: " + e.getMessage(), e);
+            throw new ExternalServiceException("precios-service no disponible: " + e.getMessage(), e);
         }
     }
 }
