@@ -2,6 +2,7 @@ package com.travelhub.catalogo.busqueda;
 
 import com.travelhub.catalogo.auto.Auto;
 import com.travelhub.catalogo.auto.AutoService;
+import com.travelhub.catalogo.huella.HuellaCarbono;
 import com.travelhub.catalogo.moneda.TipoCambioService;
 import com.travelhub.catalogo.oferta.OfertaService;
 import com.travelhub.catalogo.proveedor.*;
@@ -16,15 +17,13 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Busqueda unificada: consulta los cuatro proveedores en paralelo, normaliza todo a USD,
- * registra cada oferta (precio verificable al reservar) y oculta las bloqueadas por la IA.
+ * agrega la huella de carbono de los vuelos, registra cada oferta (precio verificable al
+ * reservar) y oculta las bloqueadas por la IA.
  */
 @Service
 public class BusquedaService {
@@ -62,7 +61,8 @@ public class BusquedaService {
     }
 
     public List<ProductoResponse> buscarVuelos(String origen, String destino, LocalDate fecha, int pax) {
-        return publicar(vuelos.buscar(origen.toUpperCase(), destino.toUpperCase(), fecha, pax));
+        List<OfertaProveedor> lista = vuelos.buscar(origen.toUpperCase(), destino.toUpperCase(), fecha, pax);
+        return publicar(conHuella(lista, origen, destino));
     }
 
     public List<ProductoResponse> buscarHoteles(String destino, LocalDate in, LocalDate out, int pax) {
@@ -80,6 +80,22 @@ public class BusquedaService {
         List<OfertaProveedor> lista = autos.disponibles(destino, desde, hasta).stream()
                 .map(a -> aOferta(a, ocupacion)).toList();
         return mapear(normalizar(lista));
+    }
+
+    /** Agrega co2Kg (por pasajero, solo ida) al detalle de cada vuelo. */
+    private List<OfertaProveedor> conHuella(List<OfertaProveedor> lista, String origen, String destino) {
+        OptionalInt kg = HuellaCarbono.kgPorPasajero(origen, destino);
+        OptionalInt km = HuellaCarbono.kilometros(origen, destino);
+        if (kg.isEmpty()) return lista;
+        List<OfertaProveedor> out = new ArrayList<>();
+        for (OfertaProveedor o : lista) {
+            Map<String, String> detalle = new LinkedHashMap<>(o.detalle());
+            detalle.put("co2Kg", String.valueOf(kg.getAsInt()));
+            detalle.put("distanciaKm", String.valueOf(km.getAsInt()));
+            out.add(new OfertaProveedor(o.id(), o.tipo(), o.proveedor(), o.nombre(), o.destino(), o.precioBase(),
+                    o.moneda(), o.unidad(), o.ocupacion(), detalle));
+        }
+        return out;
     }
 
     private List<ProductoResponse> publicar(List<OfertaProveedor> crudas) {

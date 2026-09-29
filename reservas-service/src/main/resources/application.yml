@@ -38,8 +38,9 @@ travelhub:
   outbox:
     intervalo-ms: 1000
   reservas:
-    vencimiento: ${RESERVAS_VENCIMIENTO:15m}   # PENDIENTE sin pago despues de esto -> FALLIDA
-    revision-ms: 60000
+    vencimiento: ${RESERVAS_VENCIMIENTO:15m}                          # individual sin pago -> FALLIDA
+    vencimiento-compartida: ${RESERVAS_VENCIMIENTO_COMPARTIDA:24h}    # compartida sin que paguen todos -> FALLIDA
+    revision-ms: 30000
 
 resilience4j:
   circuitbreaker:
@@ -52,7 +53,6 @@ resilience4j:
         wait-duration-in-open-state: 20s
         permitted-number-of-calls-in-half-open-state: 2
         automatic-transition-from-open-to-half-open-enabled: true
-        # solo los errores de red cuentan como falla (no los rechazos de negocio como un 409)
         record-exceptions:
           - org.springframework.web.client.ResourceAccessException
     instances:

@@ -8,14 +8,17 @@ import java.time.Instant;
 @Table(name = "pago")
 public class Pago {
 
-    public enum Estado { APROBADO, RECHAZADO }
+    public enum Estado { APROBADO, RECHAZADO, REEMBOLSADO }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reserva_id", nullable = false, unique = true)
+    @Column(name = "reserva_id", nullable = false)
     private Long reservaId;
+
+    @Column(name = "participante_id")
+    private Long participanteId;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal monto;
@@ -41,9 +44,10 @@ public class Pago {
 
     protected Pago() { }
 
-    public Pago(Long reservaId, BigDecimal monto, String moneda, String proveedor, String refProveedor,
-                Estado estado, String motivo) {
+    public Pago(Long reservaId, Long participanteId, BigDecimal monto, String moneda, String proveedor,
+                String refProveedor, Estado estado, String motivo) {
         this.reservaId = reservaId;
+        this.participanteId = participanteId;
         this.monto = monto;
         this.moneda = moneda;
         this.proveedor = proveedor;
@@ -52,8 +56,14 @@ public class Pago {
         this.motivo = motivo;
     }
 
+    public void reembolsar(String motivo) {
+        this.estado = Estado.REEMBOLSADO;
+        this.motivo = motivo == null ? null : (motivo.length() > 200 ? motivo.substring(0, 200) : motivo);
+    }
+
     public Long getId() { return id; }
     public Long getReservaId() { return reservaId; }
+    public Long getParticipanteId() { return participanteId; }
     public BigDecimal getMonto() { return monto; }
     public String getMoneda() { return moneda; }
     public String getProveedor() { return proveedor; }

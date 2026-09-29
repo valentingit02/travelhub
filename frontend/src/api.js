@@ -15,7 +15,7 @@ async function req(method, url, body, headers = {}) {
   try { data = text ? JSON.parse(text) : null } catch { data = null }
   if (!res.ok) {
     const detalle = data?.detalles?.length ? ` (${data.detalles.join(', ')})` : ''
-    const error = new Error((data?.mensaje || `Error ${res.status} en ${url.split('?')[0]}`) + detalle)
+    const error = new Error((data?.mensaje || data?.detail || `Error ${res.status} en ${url.split('?')[0]}`) + detalle)
     error.status = res.status
     throw error
   }
@@ -35,6 +35,11 @@ export const api = {
   reservar: (r, clave) => req('POST', '/api/reservas', r, { 'Idempotency-Key': clave }),
   reservas: (viajeroId) => req('GET', `/api/reservas?viajeroId=${viajeroId}`),
   cancelar: (id) => req('DELETE', `/api/reservas/${id}`),
+  creditos: (viajeroId) => req('GET', `/api/viajeros/${viajeroId}/creditos`),
+  invitacion: (token) => req('GET', `/api/reservas/compartidas/${encodeURIComponent(token)}`),
+  pagarParte: (token, nombre) => req('POST', `/api/reservas/compartidas/${encodeURIComponent(token)}/pagar`, { nombre }),
   recomendaciones: (p) => req('GET', `/api/ia/recomendaciones?${new URLSearchParams(p)}`),
+  asistente: (mensaje, contexto) => req('POST', '/api/ia/asistente', { mensaje, contexto }),
+  kit: (p) => req('GET', `/api/ia/kit?${new URLSearchParams(p)}`),
   seguir: (s) => req('POST', '/api/seguimientos', s)
 }

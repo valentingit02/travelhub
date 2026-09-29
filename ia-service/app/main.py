@@ -5,10 +5,10 @@ from contextlib import asynccontextmanager
 from datetime import date
 from typing import List, Optional
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from . import db, recomendaciones, resumen
+from . import asistente, db, kit, libros, recomendaciones, resumen
 from .anomalias import detector
 from .clima import clima
 from .config import RABBIT_HABILITADO
@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="TravelHub IA", version="2.0",
-              description="Deteccion de anomalias de precio (con historial real), resumen del viaje con LLM "
-                          "y recomendaciones.",
+app = FastAPI(title="TravelHub IA", version="3.0",
+              description="Anomalias de precio, resumen del viaje, recomendaciones, asistente conversacional "
+                          "y kit de viaje (equipaje, itinerario y libros).",
               lifespan=lifespan)
 
 
@@ -57,10 +57,17 @@ class ResumenRequest(BaseModel):
     moneda: str
 
 
+class AsistenteRequest(BaseModel):
+    mensaje: str = Field(min_length=1, max_length=500, examples=["Quiero ir a la nieve en julio con mi novia"])
+    contexto: Optional[dict] = Field(default=None, description="La 'intencion' devuelta en la respuesta anterior")
+
+
 @app.get("/health")
 def health():
     return {"status": "UP", "modelo": detector.version}
 
+
+# ---------------------------------------------------------------- anomalias
 
 @app.post("/api/ia/anomalias/evaluar", tags=["Anomalias"])
 def evaluar(req: EvaluarRequest):
@@ -79,7 +86,6 @@ def historial(limite: int = 50):
 
 @app.get("/api/ia/anomalias/modelo", tags=["Anomalias"])
 def modelo():
-    """Que aprendio el modelo: distribucion de referencia y grupos (tipo+destino) entrenados con historial."""
     return detector.resumen()
 
 
@@ -88,6 +94,8 @@ def reentrenar():
     grupos = detector.entrenar_con_historial(db.observaciones())
     return {"gruposEntrenados": grupos, "modelo": detector.resumen()}
 
+
+# ---------------------------------------------------------------- viaje
 
 @app.post("/api/ia/resumen", tags=["Resumen"])
 def generar_resumen(req: ResumenRequest):
@@ -102,3 +110,26 @@ def recomendar(destino: str, desde: date, hasta: date,
     c = clima(destino, desde, hasta)
     return {"destino": destino.upper(), "clima": c,
             "recomendaciones": recomendaciones.recomendar(destino, preferencias.split(","), c)}
+
+
+@app.post("/api/ia/asistente", tags=["Asistente"])
+def conversar(req: AsistenteRequest):
+    """Asistente conversacional: interpreta el pedido y arma un paquete real (catalogo + precios)."""
+    inicio = time.perf_counter()
+    r = asistente.responder(req.mensaje, req.contexto)
+    r["latenciaMs"] = int((time.perf_counter() - inicio) * 1000)
+    return r
+
+
+@app.get("/api/ia/kit", tags=["Kit de viaje"])
+def kit_de_viaje(destino: str, desde: date, hasta: date, pax: int = Query(2, ge=1, le=9),
+                 preferencias: str = Query("", description="Separadas por coma")):
+    """Que llevar segun el clima, itinerario dia por dia y libros para el viaje (Open Library)."""
+    if hasta <= desde:
+        raise HTTPException(400, "La vuelta tiene que ser posterior a la ida")
+    return kit.generar(destino, desde, hasta, pax, preferencias.split(","))
+
+
+@app.get("/api/ia/libros", tags=["Kit de viaje"])
+def libros_para(destino: str, limite: int = Query(5, ge=1, le=10)):
+    return libros.sugerir(destino, limite)

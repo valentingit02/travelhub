@@ -5,6 +5,8 @@ import Home from './components/Home.jsx'
 import Resultados from './components/Resultados.jsx'
 import Paquete from './components/Paquete.jsx'
 import MisViajes from './components/MisViajes.jsx'
+import PagarParte from './components/PagarParte.jsx'
+import Asistente from './components/Asistente.jsx'
 import LoginModal from './components/LoginModal.jsx'
 import Toasts from './components/Toasts.jsx'
 import { hoyMas } from './data.js'
@@ -12,14 +14,19 @@ import { hoyMas } from './data.js'
 const leerViajero = () => {
   try { return JSON.parse(localStorage.getItem('th-viajero')) } catch { return null }
 }
+const tokenInicial = () => {
+  try { return new URLSearchParams(window.location.search).get('pagar') } catch { return null }
+}
 
 export default function App() {
-  const [vista, setVista] = useState('home')
+  const [token, setToken] = useState(tokenInicial)
+  const [vista, setVista] = useState(token ? 'pagar' : 'home')
   const [busqueda, setBusqueda] = useState({ foco: 'PAQUETE', origen: 'AEP', destino: 'BRC', desde: hoyMas(45), hasta: hoyMas(50), pax: 2 })
   const [resultados, setResultados] = useState(null)
   const [buscando, setBuscando] = useState(false)
   const [paquete, setPaquete] = useState([])
   const [viajero, setViajero] = useState(leerViajero)
+  const [credito, setCredito] = useState(null)
   const [login, setLogin] = useState(false)
   const [toasts, setToasts] = useState([])
   const esperaLogin = useRef(null)
@@ -29,6 +36,12 @@ export default function App() {
     else localStorage.removeItem('th-viajero')
   }, [viajero])
 
+  const refrescarCredito = useCallback(() => {
+    if (!viajero) { setCredito(null); return }
+    api.creditos(viajero.id).then(setCredito).catch(() => setCredito(null))
+  }, [viajero])
+  useEffect(() => { refrescarCredito() }, [refrescarCredito, vista])
+
   const cerrarToast = useCallback((id) => setToasts((t) => t.filter((x) => x.id !== id)), [])
   const avisar = useCallback((texto, tipo = 'info', accion = null) => {
     const id = Date.now() + Math.random()
@@ -36,7 +49,14 @@ export default function App() {
     setTimeout(() => cerrarToast(id), accion ? 10000 : 6000)
   }, [cerrarToast])
 
-  const irA = (v) => { setVista(v); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const irA = (v) => {
+    if (v !== 'pagar' && token) {
+      setToken(null)
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+    setVista(v)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   // Buscar NO requiere cuenta: solo reservar y ver "Mis viajes".
   const buscar = async (b) => {
@@ -54,12 +74,18 @@ export default function App() {
     }
   }
 
-  // Tras un 409 (oferta vencida o bloqueada): se vacía el paquete y se busca de nuevo con precios frescos
   const rebuscar = () => { setPaquete([]); buscar(busqueda) }
 
   const alternar = (p) => setPaquete((prev) => prev.some((x) => x.id === p.id)
     ? prev.filter((x) => x.id !== p.id)
     : [...prev.filter((x) => x.tipo !== p.tipo || p.tipo === 'EXCURSION'), p])
+
+  // El asistente propone un paquete ya buscado y cotizado: se carga tal cual
+  const usarSugerencia = (s) => {
+    setBusqueda({ ...busqueda, ...s.busqueda, foco: 'PAQUETE' })
+    setPaquete(s.productos)
+    irA('paquete')
+  }
 
   const pedirLogin = () => new Promise((resolve) => {
     if (viajero) return resolve(viajero)
@@ -89,11 +115,14 @@ export default function App() {
             paquete={paquete} alternar={alternar} verPaquete={() => irA('paquete')} />
         )}
         {vista === 'paquete' && (
-          <Paquete paquete={paquete} busqueda={busqueda} viajero={viajero} quitar={alternar} irA={irA}
+          <Paquete paquete={paquete} busqueda={busqueda} viajero={viajero} credito={credito} quitar={alternar} irA={irA}
             pedirLogin={pedirLogin} avisar={avisar} rebuscar={rebuscar}
             onReservado={() => { setPaquete([]); irA('viajes') }} />
         )}
-        {vista === 'viajes' && <MisViajes viajero={viajero} pedirLogin={pedirLogin} avisar={avisar} irA={irA} />}
+        {vista === 'viajes' && (
+          <MisViajes viajero={viajero} credito={credito} pedirLogin={pedirLogin} avisar={avisar} irA={irA} />
+        )}
+        {vista === 'pagar' && token && <PagarParte token={token} avisar={avisar} irA={irA} />}
       </main>
 
       <footer className="pie">
@@ -103,6 +132,7 @@ export default function App() {
         </div>
       </footer>
 
+      {vista !== 'pagar' && <Asistente onUsar={usarSugerencia} onVerOpciones={(b) => buscar({ ...busqueda, ...b, foco: 'PAQUETE' })} />}
       {login && <LoginModal onOk={(v) => cerrarLogin(v)} onClose={() => cerrarLogin(null)} />}
       <Toasts toasts={toasts} cerrar={cerrarToast} />
     </div>

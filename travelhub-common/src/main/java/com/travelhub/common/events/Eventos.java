@@ -12,8 +12,12 @@ public final class Eventos {
     public static final String RESERVA_CREADA = "reserva.creada";
     public static final String RESERVA_CONFIRMADA = "reserva.confirmada";
     public static final String RESERVA_CANCELADA = "reserva.cancelada";
+    public static final String PAGO_SOLICITADO = "pago.solicitado";
     public static final String PAGO_APROBADO = "pago.aprobado";
     public static final String PAGO_RECHAZADO = "pago.rechazado";
+    public static final String REEMBOLSO_SOLICITADO = "reembolso.solicitado";
+    public static final String INVITACION_VIAJE = "invitacion.viaje";
+    public static final String CREDITO_OTORGADO = "credito.otorgado";
     public static final String PRECIO_CAMBIADO = "precio.cambiado";
     public static final String ANOMALIA_DETECTADA = "anomalia.detectada";
     public static final String ALERTA_PRECIO = "alerta.precio";

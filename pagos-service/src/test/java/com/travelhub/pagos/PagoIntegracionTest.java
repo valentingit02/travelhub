@@ -3,7 +3,7 @@ package com.travelhub.pagos;
 import com.travelhub.common.events.Eventos;
 import com.travelhub.common.events.PagoAprobadoEvent;
 import com.travelhub.common.events.PagoRechazadoEvent;
-import com.travelhub.common.events.ReservaCreadaEvent;
+import com.travelhub.common.events.PagoSolicitadoEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -20,11 +20,8 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Prueba de integracion con RabbitMQ y PostgreSQL reales (Testcontainers).
- * Si no hay Docker disponible, se saltea sola.
- */
-@SpringBootTest(properties = "travelhub.pagos.demora-ms=0")
+/** Integracion real con RabbitMQ y PostgreSQL (Testcontainers). Si no hay Docker, se saltea. */
+@SpringBootTest(properties = {"travelhub.pagos.demora-ms=0", "management.tracing.enabled=false"})
 @Testcontainers(disabledWithoutDocker = true)
 class PagoIntegracionTest {
 
@@ -48,24 +45,23 @@ class PagoIntegracionTest {
     }
 
     @Test
-    void reservaCreadaGeneraPagoAprobado() {
+    void pagoSolicitadoGeneraPagoAprobado() {
         String espia = colaEspia(Eventos.PAGO_APROBADO);
-        template.convertAndSend(Eventos.EXCHANGE, Eventos.RESERVA_CREADA,
-                new ReservaCreadaEvent(100L, 1L, "ana@test.com", new BigDecimal("500"), "USD"));
+        template.convertAndSend(Eventos.EXCHANGE, Eventos.PAGO_SOLICITADO,
+                new PagoSolicitadoEvent(100L, 7L, "ana@test.com", new BigDecimal("500"), "USD"));
 
         Object msg = template.receiveAndConvert(espia, 15000);
         assertInstanceOf(PagoAprobadoEvent.class, msg);
-        assertEquals(100L, ((PagoAprobadoEvent) msg).reservaId());
-        assertEquals(Pago.Estado.APROBADO, pagos.findByReservaId(100L).orElseThrow().getEstado());
+        assertEquals(7L, ((PagoAprobadoEvent) msg).participanteId());
+        assertEquals(1, pagos.findByReservaIdOrderByIdAsc(100L).size());
     }
 
     @Test
     void montoSobreElLimiteGeneraPagoRechazado() {
         String espia = colaEspia(Eventos.PAGO_RECHAZADO);
-        template.convertAndSend(Eventos.EXCHANGE, Eventos.RESERVA_CREADA,
-                new ReservaCreadaEvent(200L, 1L, "ana@test.com", new BigDecimal("99999"), "USD"));
+        template.convertAndSend(Eventos.EXCHANGE, Eventos.PAGO_SOLICITADO,
+                new PagoSolicitadoEvent(200L, 8L, "ana@test.com", new BigDecimal("99999"), "USD"));
 
-        Object msg = template.receiveAndConvert(espia, 15000);
-        assertInstanceOf(PagoRechazadoEvent.class, msg);
+        assertInstanceOf(PagoRechazadoEvent.class, template.receiveAndConvert(espia, 15000));
     }
 }

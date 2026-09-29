@@ -152,6 +152,9 @@ function Tarjeta({ p, busqueda, elegido, alternar }) {
         <h3>{p.nombre}</h3>
         <div className="chips">
           {detalle.map(([k, v]) => <span key={k} className="chip"><i>{k}</i> {v}</span>)}
+          {p.detalle?.co2Kg && (
+            <span className="chip co2" title={`Estimación para ${p.detalle.distanciaKm} km`}>≈ {p.detalle.co2Kg} kg CO₂ por persona</span>
+          )}
         </div>
         {p.tipo !== 'EXCURSION' && (
           <div className="ocupacion">

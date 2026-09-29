@@ -1,3 +1,6 @@
 package com.travelhub.common.events;
 
-public record ReservaCanceladaEvent(Long reservaId, String email, String nombre, String estado, String motivo) { }
+import java.util.List;
+
+public record ReservaCanceladaEvent(Long reservaId, String email, String nombre, String estado, String motivo,
+                                    List<String> acompanantes) { }

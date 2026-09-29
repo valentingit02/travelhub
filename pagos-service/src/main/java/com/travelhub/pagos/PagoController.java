@@ -19,7 +19,7 @@ public class PagoController {
 
     @GetMapping
     public List<Pago> listar(@RequestParam(required = false) Long reservaId) {
-        if (reservaId != null) return repo.findByReservaId(reservaId).stream().toList();
+        if (reservaId != null) return repo.findByReservaIdOrderByIdAsc(reservaId);
         return repo.findAll();
     }
 
