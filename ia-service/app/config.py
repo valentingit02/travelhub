@@ -9,6 +9,15 @@ OLLAMA_MODELO = os.getenv("OLLAMA_MODELO", "llama3.2:1b")
 LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "5"))  # RNF: resumen < 5 s, si no, plantilla
 MODELO_VERSION = "iforest-zscore-v1"
 
+# Servicios que usa el asistente para armar paquetes reales
+CATALOGO_URL = os.getenv("CATALOGO_URL", "http://localhost:8081")
+PRECIOS_URL = os.getenv("PRECIOS_URL", "http://localhost:8082")
+SERVICIOS_TIMEOUT_S = float(os.getenv("SERVICIOS_TIMEOUT_S", "40"))
+
+# Open Library (libros para el viaje). Piden identificarse con User-Agent y cachear.
+OPEN_LIBRARY_URL = os.getenv("OPEN_LIBRARY_URL", "https://openlibrary.org")
+USER_AGENT = os.getenv("IA_USER_AGENT", "TravelHub-TP-UADE/1.0 (trabajo practico academico)")
+
 EXCHANGE = "travelhub.events"
 DLX = "travelhub.dlx"
 RK_PRECIO_CAMBIADO = "precio.cambiado"
@@ -26,3 +35,6 @@ DESTINOS = {
     "SLA": ("Salta", -24.79, -65.41),
     "FTE": ("El Calafate", -50.34, -72.26),
 }
+
+# Destinos que hoy vende el catalogo (los que el asistente puede ofrecer)
+DESTINOS_VENTA = ["BRC", "MDZ", "IGR", "USH", "MAD"]

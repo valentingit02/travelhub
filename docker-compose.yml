@@ -88,6 +88,7 @@ services:
       CATALOGO_URL: http://catalogo:8081
       PRECIOS_URL: http://precios:8082
       RESERVAS_VENCIMIENTO: ${RESERVAS_VENCIMIENTO:-15m}
+      RESERVAS_VENCIMIENTO_COMPARTIDA: ${RESERVAS_VENCIMIENTO_COMPARTIDA:-24h}
 
   pagos:
     <<: *java
@@ -103,9 +104,17 @@ services:
     ports: ["8085:8085"]
     environment:
       RABBIT_HOST: rabbitmq
-      MAIL_HOST: mailpit
       IA_URL: http://ia:8000
       ZIPKIN_URL: http://zipkin:9411/api/v2/spans
+      WEB_URL: ${WEB_URL:-http://localhost:8080}
+      # Por defecto Mailpit. Para casillas reales completar MAIL_* en .env (ver .env.example)
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_STARTTLS: ${MAIL_STARTTLS:-false}
+      MAIL_REMITENTE: ${MAIL_REMITENTE:-reservas@travelhub.local}
     depends_on:
       rabbitmq: { condition: service_healthy }
 
@@ -118,6 +127,8 @@ services:
       IA_DB_DSN: postgresql://${DB_USER:-travelhub}:${DB_PASSWORD:-travelhub}@postgres:5432/ia_db
       OLLAMA_URL: http://ollama:11434
       OLLAMA_MODELO: ${OLLAMA_MODELO:-llama3.2:1b}
+      CATALOGO_URL: http://catalogo:8081
+      PRECIOS_URL: http://precios:8082
     depends_on:
       postgres: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
@@ -126,7 +137,7 @@ services:
     build: { context: ., dockerfile: gateway/Dockerfile }
     restart: unless-stopped
     ports: ["8080:80"]                     # app: http://localhost:8080
-    depends_on: [catalogo, precios, reservas, pagos, ia]
+    depends_on: [catalogo, precios, reservas, pagos, notificaciones, ia]
 
 volumes:
   pgdata:

@@ -1,5 +1,6 @@
 package com.travelhub.notificaciones;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.travelhub.common.events.ReservaConfirmadaEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,8 @@ import java.time.Duration;
 import java.util.Map;
 
 /**
- * Pide a ia-service el resumen del viaje. Por privacidad solo se envian destino,
- * fechas, productos y el nombre de pila (nunca documento ni email).
+ * Pide a ia-service el resumen del viaje y el kit de viaje. Por privacidad solo se envian
+ * destino, fechas, productos y el nombre de pila (nunca documento ni email).
  */
 @Component
 public class IaClient {
@@ -42,6 +43,22 @@ public class IaClient {
             log.warn("ia-service no disponible ({}), se usa resumen basico", ex.getMessage());
             return new Resumen("Tu viaje a " + e.destino() + " del " + e.desde() + " al " + e.hasta()
                     + " esta confirmado. Total: " + e.total() + " " + e.moneda() + ".", "fallback-java", 0L);
+        }
+    }
+
+    /** Kit de viaje (equipaje, itinerario y libros). Devuelve null si la IA no responde. */
+    public JsonNode kit(ReservaConfirmadaEvent e) {
+        try {
+            return http.get().uri(u -> u.path("/api/ia/kit")
+                            .queryParam("destino", e.destino())
+                            .queryParam("desde", e.desde().toString())
+                            .queryParam("hasta", e.hasta().toString())
+                            .queryParam("pax", e.pasajeros())
+                            .build())
+                    .retrieve().body(JsonNode.class);
+        } catch (Exception ex) {
+            log.warn("Kit de viaje no disponible: {}", ex.getMessage());
+            return null;
         }
     }
 }

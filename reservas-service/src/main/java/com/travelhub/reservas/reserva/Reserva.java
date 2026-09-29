@@ -2,12 +2,13 @@ package com.travelhub.reservas.reserva;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Pedido del enunciado: la reserva de un paquete. */
+/** Pedido del enunciado: la reserva de un paquete (individual o compartida entre amigos). */
 @Entity
 @Table(name = "reserva")
 public class Reserva {
@@ -47,9 +48,18 @@ public class Reserva {
     @Column(name = "creada_en", nullable = false)
     private Instant creadaEn = Instant.now();
 
-    /** Clave enviada por el cliente en el header Idempotency-Key. */
     @Column(name = "idempotency_key", length = 80, unique = true)
     private String idempotencyKey;
+
+    @Column(nullable = false)
+    private boolean compartida;
+
+    /** Si sigue PENDIENTE despues de esto, se compensa y pasa a FALLIDA. */
+    @Column(name = "vence_en", nullable = false)
+    private Instant venceEn = creadaEn.plus(Duration.ofMinutes(15));
+
+    @Column(name = "credito_aplicado", nullable = false, precision = 12, scale = 2)
+    private BigDecimal creditoAplicado = BigDecimal.ZERO;
 
     // EAGER a proposito: la Saga trabaja fuera de una transaccion larga
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -80,6 +90,15 @@ public class Reserva {
         this.idempotencyKey = clave;
     }
 
+    public void configurarPago(boolean compartida, Duration plazo) {
+        this.compartida = compartida;
+        this.venceEn = creadaEn.plus(plazo);
+    }
+
+    public void aplicarCredito(BigDecimal monto) {
+        this.creditoAplicado = monto;
+    }
+
     public void cambiarEstado(EstadoReserva nuevo, String motivo) {
         this.estado = nuevo;
         if (motivo != null) this.motivo = motivo.length() > 300 ? motivo.substring(0, 300) : motivo;
@@ -99,5 +118,8 @@ public class Reserva {
     public String getMotivo() { return motivo; }
     public Instant getCreadaEn() { return creadaEn; }
     public String getIdempotencyKey() { return idempotencyKey; }
+    public boolean isCompartida() { return compartida; }
+    public Instant getVenceEn() { return venceEn; }
+    public BigDecimal getCreditoAplicado() { return creditoAplicado; }
     public List<ItemReserva> getItems() { return items; }
 }

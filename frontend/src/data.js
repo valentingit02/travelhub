@@ -53,6 +53,9 @@ export const dinero = (v, moneda = 'USD', dec = 0) => {
 export const fecha = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })
 
+export const fechaHora = (iso) =>
+  new Date(iso).toLocaleString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+
 export const ciudad = (iata) => DESTINOS[iata]?.nombre || iata
 
-export const DETALLE_OCULTO = new Set(['nota', 'rateType', 'precioOriginal'])
+export const DETALLE_OCULTO = new Set(['nota', 'rateType', 'precioOriginal', 'co2Kg', 'distanciaKm'])

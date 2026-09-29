@@ -9,13 +9,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class PagosRabbitConfig {
 
-    public static final String COLA_RESERVA_CREADA = "pagos.reserva-creada";
+    public static final String COLA_PAGO_SOLICITADO = "pagos.pago-solicitado";
+    public static final String COLA_REEMBOLSO = "pagos.reembolso-solicitado";
+
+    @Bean Queue colaPagoSolicitado() { return MensajeriaConfig.colaConDlq(COLA_PAGO_SOLICITADO); }
+    @Bean Queue colaReembolso() { return MensajeriaConfig.colaConDlq(COLA_REEMBOLSO); }
 
     @Bean
-    Queue colaReservaCreada() { return MensajeriaConfig.colaConDlq(COLA_RESERVA_CREADA); }
+    Binding bindPagoSolicitado(Queue colaPagoSolicitado, TopicExchange eventosExchange) {
+        return BindingBuilder.bind(colaPagoSolicitado).to(eventosExchange).with(Eventos.PAGO_SOLICITADO);
+    }
 
     @Bean
-    Binding bindReservaCreada(Queue colaReservaCreada, TopicExchange eventosExchange) {
-        return BindingBuilder.bind(colaReservaCreada).to(eventosExchange).with(Eventos.RESERVA_CREADA);
+    Binding bindReembolso(Queue colaReembolso, TopicExchange eventosExchange) {
+        return BindingBuilder.bind(colaReembolso).to(eventosExchange).with(Eventos.REEMBOLSO_SOLICITADO);
     }
 }

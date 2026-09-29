@@ -20,7 +20,7 @@ public class ItemReserva {
     @Column(nullable = false, length = 20)
     private TipoProducto tipo;
 
-    @Column(name = "producto_id", nullable = false, length = 1000)   // los rateKey de Hotelbeds son largos
+    @Column(name = "producto_id", nullable = false, length = 1000)
     private String productoId;
 
     @Column(nullable = false, length = 200)
@@ -32,6 +32,10 @@ public class ItemReserva {
 
     @Column(name = "precio_cotizado", precision = 12, scale = 2)
     private BigDecimal precioCotizado;
+
+    /** Proteccion de precio: menor precio base ya compensado con credito. */
+    @Column(name = "precio_protegido", precision = 12, scale = 2)
+    private BigDecimal precioProtegido;
 
     @Column(name = "ref_externa", length = 80)
     private String refExterna;
@@ -53,6 +57,8 @@ public class ItemReserva {
 
     public void setPrecioCotizado(BigDecimal p) { this.precioCotizado = p; }
 
+    public void setPrecioProtegido(BigDecimal p) { this.precioProtegido = p; }
+
     public void marcarReservado(String ref) {
         this.refExterna = ref;
         this.estado = EstadoItem.RESERVADO;
@@ -68,6 +74,7 @@ public class ItemReserva {
     public String getDescripcion() { return descripcion; }
     public BigDecimal getPrecioBase() { return precioBase; }
     public BigDecimal getPrecioCotizado() { return precioCotizado; }
+    public BigDecimal getPrecioProtegido() { return precioProtegido; }
     public String getRefExterna() { return refExterna; }
     public EstadoItem getEstado() { return estado; }
 }
