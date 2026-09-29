@@ -1,0 +1,124 @@
+# TravelHub completo:            docker compose up -d --build
+# Solo infraestructura (dev):     docker compose up -d postgres rabbitmq redis mailpit
+# Con LLM local (opcional):       docker compose --profile llm up -d
+x-java: &java
+  restart: unless-stopped
+  environment: &java-env
+    DB_USER: ${DB_USER:-travelhub}
+    DB_PASSWORD: ${DB_PASSWORD:-travelhub}
+    RABBIT_HOST: rabbitmq
+  depends_on: &java-deps
+    postgres: { condition: service_healthy }
+    rabbitmq: { condition: service_healthy }
+
+services:
+  # ---------------- Infraestructura ----------------
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USER:-travelhub}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-travelhub}
+      POSTGRES_DB: travelhub
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-travelhub}"]
+      interval: 5s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports: ["5672:5672", "15672:15672"]   # consola: http://localhost:15672 (guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      retries: 20
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  mailpit:
+    image: axllent/mailpit
+    ports: ["1025:1025", "8025:8025"]      # bandeja: http://localhost:8025
+
+  ollama:
+    image: ollama/ollama
+    profiles: ["llm"]
+    ports: ["11434:11434"]
+    volumes: [ollama:/root/.ollama]
+
+  # ---------------- Microservicios ----------------
+  catalogo:
+    <<: *java
+    build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: catalogo-service } }
+    ports: ["8081:8081"]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/catalogo_db
+      REDIS_HOST: redis
+      PROVEEDORES_MODO: ${PROVEEDORES_MODO:-mock}
+      DUFFEL_TOKEN: ${DUFFEL_TOKEN:-}
+      HOTELBEDS_HOTEL_API_KEY: ${HOTELBEDS_HOTEL_API_KEY:-}
+      HOTELBEDS_HOTEL_SECRET: ${HOTELBEDS_HOTEL_SECRET:-}
+      HOTELBEDS_ACTIVITIES_API_KEY: ${HOTELBEDS_ACTIVITIES_API_KEY:-}
+      HOTELBEDS_ACTIVITIES_SECRET: ${HOTELBEDS_ACTIVITIES_SECRET:-}
+
+  precios:
+    build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: precios-service } }
+    restart: unless-stopped
+    ports: ["8082:8082"]
+
+  reservas:
+    <<: *java
+    build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: reservas-service } }
+    ports: ["8083:8083"]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/reservas_db
+      CATALOGO_URL: http://catalogo:8081
+      PRECIOS_URL: http://precios:8082
+
+  pagos:
+    <<: *java
+    build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: pagos-service } }
+    ports: ["8084:8084"]
+    environment:
+      <<: *java-env
+      DB_URL: jdbc:postgresql://postgres:5432/pagos_db
+
+  notificaciones:
+    build: { context: ., dockerfile: docker/java.Dockerfile, args: { MODULE: notificaciones-service } }
+    restart: unless-stopped
+    ports: ["8085:8085"]
+    environment:
+      RABBIT_HOST: rabbitmq
+      MAIL_HOST: mailpit
+      IA_URL: http://ia:8000
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+
+  ia:
+    build: ./ia-service
+    restart: unless-stopped
+    ports: ["8000:8000"]                   # docs: http://localhost:8000/docs
+    environment:
+      RABBIT_HOST: rabbitmq
+      IA_DB_DSN: postgresql://${DB_USER:-travelhub}:${DB_PASSWORD:-travelhub}@postgres:5432/ia_db
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODELO: ${OLLAMA_MODELO:-llama3.2:1b}
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+
+  gateway:
+    build: { context: ., dockerfile: gateway/Dockerfile }
+    restart: unless-stopped
+    ports: ["8080:80"]                     # app: http://localhost:8080
+    depends_on: [catalogo, precios, reservas, pagos, ia]
+
+volumes:
+  pgdata:
+  ollama:

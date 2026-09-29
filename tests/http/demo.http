@@ -1,0 +1,63 @@
+### Tambien se pueden correr desde VS Code (extension REST Client) o IntelliJ.
+@gw = http://localhost:8080
+
+### 1. Buscar todo para Bariloche
+GET {{gw}}/api/catalogo/buscar?origen=AEP&destino=BRC&desde=2027-07-10&hasta=2027-07-15&pax=2
+
+### 2. Cotizar el mismo hotel en julio (alta) y en abril (baja)
+POST {{gw}}/api/precios/cotizar
+Content-Type: application/json
+
+{ "tipoProducto": "HOTEL", "precioBase": 100, "moneda": "USD", "fechaInicio": "2027-07-10",
+  "fechaFin": "2027-07-13", "pasajeros": 2, "ocupacion": 0.6 }
+
+###
+POST {{gw}}/api/precios/cotizar
+Content-Type: application/json
+
+{ "tipoProducto": "HOTEL", "precioBase": 100, "moneda": "USD", "fechaInicio": "2027-04-10",
+  "fechaFin": "2027-04-13", "pasajeros": 2, "ocupacion": 0.6 }
+
+### 3. Registrar un viajero
+POST {{gw}}/api/viajeros
+Content-Type: application/json
+
+{ "nombre": "Ana", "apellido": "Perez", "email": "ana@test.com", "documento": "30111222",
+  "fechaNacimiento": "1995-05-10", "preferencias": "aventura,gastronomia" }
+
+### 4. Reservar un paquete OK (vuelo + hotel + auto)
+POST {{gw}}/api/reservas
+Content-Type: application/json
+
+{ "viajeroId": 1, "destino": "BRC", "desde": "2027-07-10", "hasta": "2027-07-15", "pasajeros": 2,
+  "items": [
+    { "tipo": "VUELO", "productoId": "MOCK-VUELO-AEP-BRC-0", "descripcion": "Vuelo AEP-BRC", "precioBase": 150, "moneda": "USD", "ocupacion": 0.5 },
+    { "tipo": "HOTEL", "productoId": "MOCK-HOTEL-BRC-0", "descripcion": "Llao Llao Resort", "precioBase": 120, "moneda": "USD", "ocupacion": 0.6 },
+    { "tipo": "AUTO", "productoId": "AUTO-1", "descripcion": "Fiat Cronos", "precioBase": 45, "moneda": "USD", "ocupacion": 0.0 }
+  ] }
+
+### 5. Demo Saga: el hotel falla y se cancela el vuelo automaticamente
+POST {{gw}}/api/reservas
+Content-Type: application/json
+
+{ "viajeroId": 1, "destino": "BRC", "desde": "2027-08-10", "hasta": "2027-08-12", "pasajeros": 1,
+  "items": [
+    { "tipo": "VUELO", "productoId": "MOCK-VUELO-AEP-BRC-1", "descripcion": "Vuelo AEP-BRC", "precioBase": 150, "moneda": "USD", "ocupacion": 0.5 },
+    { "tipo": "HOTEL", "productoId": "MOCK-HOTEL-FALLA", "descripcion": "Hotel Falla", "precioBase": 80, "moneda": "USD", "ocupacion": 0.4 }
+  ] }
+
+### 6. Ver reservas con su bitacora de Saga
+GET {{gw}}/api/reservas?viajeroId=1
+
+### 7. Demo IA: cargar un auto a 1 USD -> la IA lo marca y el catalogo lo pone EN REVISION
+PUT http://localhost:8081/api/catalogo/autos/2
+Content-Type: application/json
+
+{ "destinoIata": "BRC", "categoria": "SUV", "marca": "Toyota", "modelo": "SW4", "plazas": 7,
+  "transmisionAutomatica": true, "precioBaseDia": 1, "moneda": "USD" }
+
+### 8. Verificar (el auto 2 deberia tener enRevision=true)
+GET http://localhost:8081/api/catalogo/autos/2
+
+### 9. Recomendaciones de la IA
+GET {{gw}}/api/ia/recomendaciones?destino=BRC&desde=2027-07-10&hasta=2027-07-15&preferencias=aventura

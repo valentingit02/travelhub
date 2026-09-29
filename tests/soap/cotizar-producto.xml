@@ -1,0 +1,17 @@
+<!-- POST http://localhost:8082/ws  (Content-Type: text/xml)   WSDL: http://localhost:8082/ws/cotizacion.wsdl -->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:c="http://travelhub.com/precios/soap">
+  <soapenv:Body>
+    <c:CotizarProductoRequest>
+      <c:item>
+        <c:tipoProducto>HOTEL</c:tipoProducto>
+        <c:precioBase>100</c:precioBase>
+        <c:moneda>USD</c:moneda>
+        <c:fechaInicio>2027-07-10</c:fechaInicio>
+        <c:fechaFin>2027-07-13</c:fechaFin>
+        <c:pasajeros>2</c:pasajeros>
+        <c:ocupacion>0.6</c:ocupacion>
+      </c:item>
+    </c:CotizarProductoRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

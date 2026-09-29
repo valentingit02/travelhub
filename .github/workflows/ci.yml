@@ -1,0 +1,72 @@
+# Corre en cada PR hacia main y en cada push a main.
+# Los 3 jobs se marcan como obligatorios en la proteccion de la rama.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  java:
+    name: java-build-y-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Compilar y testear (incluye Testcontainers)
+        run: mvn -B -ntp clean verify
+      - name: Reportes de tests si falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-tests
+          path: '**/target/surefire-reports/'
+          retention-days: 7
+
+  ia:
+    name: ia-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ia-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: ia-service/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Tests y validacion del modelo
+        env:
+          RABBIT_HABILITADO: 'false'
+        run: |
+          python -m pytest -q
+          python evaluar_modelo.py
+
+  frontend:
+    name: frontend-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run build

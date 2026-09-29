@@ -1,0 +1,94 @@
+package com.travelhub.reservas.reserva;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+/** Pedido del enunciado: la reserva de un paquete. */
+@Entity
+@Table(name = "reserva")
+public class Reserva {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "viajero_id", nullable = false)
+    private Long viajeroId;
+
+    @Column(nullable = false, length = 3)
+    private String destino;
+
+    @Column(nullable = false)
+    private LocalDate desde;
+
+    @Column(nullable = false)
+    private LocalDate hasta;
+
+    @Column(nullable = false)
+    private Integer pasajeros;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private EstadoReserva estado = EstadoReserva.PENDIENTE;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal total;
+
+    @Column(length = 3)
+    private String moneda;
+
+    @Column(length = 300)
+    private String motivo;
+
+    @Column(name = "creada_en", nullable = false)
+    private Instant creadaEn = Instant.now();
+
+    // EAGER a proposito: la Saga trabaja fuera de una transaccion larga
+    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("id")
+    private List<ItemReserva> items = new ArrayList<>();
+
+    protected Reserva() { }
+
+    public Reserva(Long viajeroId, String destino, LocalDate desde, LocalDate hasta, Integer pasajeros) {
+        this.viajeroId = viajeroId;
+        this.destino = destino;
+        this.desde = desde;
+        this.hasta = hasta;
+        this.pasajeros = pasajeros;
+    }
+
+    public void agregarItem(ItemReserva item) {
+        item.setReserva(this);
+        items.add(item);
+    }
+
+    public void setTotal(BigDecimal total, String moneda) {
+        this.total = total;
+        this.moneda = moneda;
+    }
+
+    public void cambiarEstado(EstadoReserva nuevo, String motivo) {
+        this.estado = nuevo;
+        if (motivo != null) this.motivo = motivo;
+    }
+
+    public String referencia() { return "RES-" + id; }
+
+    public Long getId() { return id; }
+    public Long getViajeroId() { return viajeroId; }
+    public String getDestino() { return destino; }
+    public LocalDate getDesde() { return desde; }
+    public LocalDate getHasta() { return hasta; }
+    public Integer getPasajeros() { return pasajeros; }
+    public EstadoReserva getEstado() { return estado; }
+    public BigDecimal getTotal() { return total; }
+    public String getMoneda() { return moneda; }
+    public String getMotivo() { return motivo; }
+    public Instant getCreadaEn() { return creadaEn; }
+    public List<ItemReserva> getItems() { return items; }
+}

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Contrato SOAP de cotizacion (contract-first). El WSDL se genera a partir de este XSD. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://travelhub.com/precios/soap"
+           targetNamespace="http://travelhub.com/precios/soap"
+           elementFormDefault="qualified">
+
+  <xs:simpleType name="TipoProducto">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VUELO"/>
+      <xs:enumeration value="HOTEL"/>
+      <xs:enumeration value="EXCURSION"/>
+      <xs:enumeration value="AUTO"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="Item">
+    <xs:sequence>
+      <xs:element name="tipoProducto" type="tns:TipoProducto"/>
+      <xs:element name="precioBase" type="xs:decimal"/>
+      <xs:element name="moneda" type="xs:string"/>
+      <xs:element name="fechaInicio" type="xs:date"/>
+      <xs:element name="fechaFin" type="xs:date"/>
+      <xs:element name="pasajeros" type="xs:int"/>
+      <xs:element name="ocupacion" type="xs:double"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Factor">
+    <xs:sequence>
+      <xs:element name="estrategia" type="xs:string"/>
+      <xs:element name="factor" type="xs:decimal"/>
+      <xs:element name="motivo" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Cotizacion">
+    <xs:sequence>
+      <xs:element name="tipoProducto" type="tns:TipoProducto"/>
+      <xs:element name="precioBase" type="xs:decimal"/>
+      <xs:element name="unidades" type="xs:long"/>
+      <xs:element name="unidad" type="xs:string"/>
+      <xs:element name="subtotal" type="xs:decimal"/>
+      <xs:element name="factor" type="tns:Factor" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="precioFinal" type="xs:decimal"/>
+      <xs:element name="moneda" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="CotizarProductoRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="item" type="tns:Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarProductoResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="cotizacion" type="tns:Cotizacion"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarPaqueteRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="item" type="tns:Item" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarPaqueteResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="cotizacion" type="tns:Cotizacion" maxOccurs="unbounded"/>
+        <xs:element name="subtotal" type="xs:decimal"/>
+        <xs:element name="factorPaquete" type="xs:decimal"/>
+        <xs:element name="motivoDescuento" type="xs:string"/>
+        <xs:element name="total" type="xs:decimal"/>
+        <xs:element name="moneda" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

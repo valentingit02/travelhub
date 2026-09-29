@@ -1,0 +1,73 @@
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: catalogo-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/catalogo_db}
+    username: ${DB_USER:travelhub}
+    password: ${DB_PASSWORD:travelhub}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        default-requeue-rejected: false   # tras los reintentos, el mensaje va a la DLQ
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1s
+          multiplier: 2
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      timeout: 2s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 15m      # las tarifas no se cachean mas de unos minutos
+
+travelhub:
+  proveedores:
+    modo: ${PROVEEDORES_MODO:mock}   # mock | real
+    duffel:
+      url: https://api.duffel.com
+      token: ${DUFFEL_TOKEN:}
+      version: ${DUFFEL_VERSION:v2}
+    hotelbeds:
+      url: https://api.test.hotelbeds.com
+      hotel-key: ${HOTELBEDS_HOTEL_API_KEY:}
+      hotel-secret: ${HOTELBEDS_HOTEL_SECRET:}
+      activities-key: ${HOTELBEDS_ACTIVITIES_API_KEY:}
+      activities-secret: ${HOTELBEDS_ACTIVITIES_SECRET:}
+      destinos:            # IATA -> codigo de destino de Hotelbeds (verificar en su Content API)
+        BRC: BRC
+        MDZ: MDZ
+        IGR: IGU
+        USH: USH
+        MAD: MAD
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    redis:
+      enabled: false   # Redis es opcional: si se cae, el servicio sigue sano
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"

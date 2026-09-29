@@ -1,0 +1,34 @@
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: precios-service
+  webservices:
+    path: /ws
+    servlet:
+      init:
+        transformWsdlLocations: true
+
+travelhub:
+  precios:
+    meses-temporada-alta: [1, 2, 7, 12]   # verano y vacaciones de invierno
+    factor-temporada-alta: 1.30
+    factor-temporada-baja: 0.90
+    pasajeros-descuento-grupo: 4
+    factor-grupo: 0.90
+    factor-paquete: 0.93                  # 7 % off si el paquete combina 2+ tipos de producto
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId:-sin-id}] %logger{36} - %msg%n"

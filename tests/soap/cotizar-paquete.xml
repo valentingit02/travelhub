@@ -1,0 +1,17 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:c="http://travelhub.com/precios/soap">
+  <soapenv:Body>
+    <c:CotizarPaqueteRequest>
+      <c:item>
+        <c:tipoProducto>VUELO</c:tipoProducto><c:precioBase>150</c:precioBase><c:moneda>USD</c:moneda>
+        <c:fechaInicio>2027-07-10</c:fechaInicio><c:fechaFin>2027-07-15</c:fechaFin>
+        <c:pasajeros>2</c:pasajeros><c:ocupacion>0.5</c:ocupacion>
+      </c:item>
+      <c:item>
+        <c:tipoProducto>HOTEL</c:tipoProducto><c:precioBase>120</c:precioBase><c:moneda>USD</c:moneda>
+        <c:fechaInicio>2027-07-10</c:fechaInicio><c:fechaFin>2027-07-15</c:fechaFin>
+        <c:pasajeros>2</c:pasajeros><c:ocupacion>0.6</c:ocupacion>
+      </c:item>
+    </c:CotizarPaqueteRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
