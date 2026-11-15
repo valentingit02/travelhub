@@ -1,0 +1,29 @@
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+     execution: local
+        script: /k6/busqueda.js
+        output: -
+     scenarios: (100.00%) 1 scenario, 50 max VUs, 2m0s max duration (incl. graceful stop):
+              * default: Up to 50 looping VUs for 1m30s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+     ✓ status 200
+     checks.........................: 100.00% 3631 out of 3631
+     data_received..................: 13 MB   138 kB/s
+     data_sent......................: 628 kB  7.0 kB/s
+     http_req_blocked...............: avg=182.44µs min=3.94µs  med=15.58µs  max=57.44ms  p(90)=28.67µs  p(95)=41.67µs 
+     http_req_connecting............: avg=143.02µs min=0s      med=0s       max=57.23ms  p(90)=0s       p(95)=0s      
+   ✓ http_req_duration..............: avg=39.58ms  min=7.98ms  med=24.69ms  max=868.08ms p(90)=72.73ms  p(95)=115.01ms
+       { expected_response:true }...: avg=39.58ms  min=7.98ms  med=24.69ms  max=868.08ms p(90)=72.73ms  p(95)=115.01ms
+   ✓ http_req_failed................: 0.00%   0 out of 3631
+     http_req_receiving.............: avg=961.24µs min=33.54µs med=317.66µs max=110.68ms p(90)=2.22ms   p(95)=3.76ms  
+     http_req_sending...............: avg=96.91µs  min=10.39µs med=70.16µs  max=10.28ms  p(90)=132.59µs p(95)=164.62µs
+     http_req_tls_handshaking.......: avg=0s       min=0s      med=0s       max=0s       p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=38.52ms  min=7.74ms  med=24.04ms  max=863.11ms p(90)=69.27ms  p(95)=111.88ms
+     http_reqs......................: 3631    40.181411/s
+     iteration_duration.............: avg=1.04s    min=1s      med=1.02s    max=1.91s    p(90)=1.07s    p(95)=1.12s   
+     iterations.....................: 3631    40.181411/s
+     vus............................: 4       min=3            max=50
+     vus_max........................: 50      min=50           max=50
+default ✓ [ 100% ] 00/50 VUs  1m30s

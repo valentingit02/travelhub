@@ -69,6 +69,17 @@ public class OfertaPublicada {
         this.expiraEn = expira;
     }
 
+    /** true si la oferta que trajo el proveedor es igual a la guardada (todo lo que refrescar() escribiria). */
+    public boolean mismosDatos(OfertaProveedor o) {
+        return tipo == o.tipo()
+                && proveedor.equals(recortar(o.proveedor(), 30))
+                && nombre.equals(recortar(o.nombre(), 200))
+                && destino.equals(o.destino().toUpperCase())
+                && precio.compareTo(o.precioBase()) == 0
+                && moneda.equals(o.moneda())
+                && Double.compare(ocupacion, o.ocupacion()) == 0;
+    }
+
     public void bloquear(String motivo) {
         this.bloqueada = true;
         this.motivoBloqueo = recortar(motivo, 200);

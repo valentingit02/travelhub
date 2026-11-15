@@ -25,6 +25,16 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiError> noAutenticado(UnauthorizedException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), List.of());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> prohibido(ForbiddenException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> conflict(ConflictException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), List.of());
@@ -63,6 +73,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> generico(Exception ex) {
         log.error("Error no controlado", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor", List.of());
+    }
+
+    /** Tambien lo usan los handlers de Spring Security (401/403 fuera de los controllers). */
+    public static ApiError error(HttpStatus status, String mensaje) {
+        return new ApiError(status.value(), status.getReasonPhrase(), mensaje,
+                MDC.get(CorrelationIdFilter.MDC_KEY), Instant.now(), List.of());
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String mensaje, List<String> detalles) {

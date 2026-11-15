@@ -1,0 +1,26 @@
+# mvn -B test  (2026-11-15 18:38)
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.259 s -- in com.travelhub.common.HotelbedsSignatureTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.062 s -- in com.travelhub.common.ProductoFactoryTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 27.32 s -- in com.travelhub.catalogo.AutoRepositoryTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.travelhub.catalogo.HuellaCarbonoTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.941 s -- in com.travelhub.catalogo.OfertaServiceTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.106 s -- in com.travelhub.catalogo.proveedor.MockProveedoresTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.646 s -- in com.travelhub.catalogo.TipoCambioServiceTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.397 s -- in com.travelhub.precios.EstrategiasPrecioTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 40.09 s -- in com.travelhub.precios.InvocacionLocalVsRemotaTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.13 s -- in com.travelhub.reservas.AuthServiceTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.311 s -- in com.travelhub.reservas.OutboxRelayTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in com.travelhub.reservas.RepartoYCreditoTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.512 s -- in com.travelhub.reservas.ReservaSagaTest
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.09 s -- in com.travelhub.reservas.SeguridadWebTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.043 s -- in com.travelhub.reservas.TokenServiceTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 56.69 s -- in com.travelhub.pagos.PagoIntegracionTest
+Reactor Summary for TravelHub 0.1.0-SNAPSHOT:
+TravelHub .......................................... SUCCESS [  0.995 s]
+travelhub-common ................................... SUCCESS [  8.262 s]
+catalogo-service ................................... SUCCESS [ 41.038 s]
+precios-service .................................... SUCCESS [ 49.903 s]
+reservas-service ................................... SUCCESS [ 50.780 s]
+pagos-service ...................................... SUCCESS [01:08 min]
+notificaciones-service ............................. SUCCESS [  0.604 s]
+BUILD SUCCESS

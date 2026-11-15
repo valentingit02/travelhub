@@ -3,6 +3,7 @@ package com.travelhub.reservas.reserva;
 import com.travelhub.common.events.*;
 import com.travelhub.common.util.ValidadorFechas;
 import com.travelhub.common.web.ConflictException;
+import com.travelhub.common.web.ForbiddenException;
 import com.travelhub.common.web.NotFoundException;
 import com.travelhub.reservas.cliente.CatalogoClient;
 import com.travelhub.reservas.cliente.PreciosClient;
@@ -379,6 +380,13 @@ public class ReservaFacade {
         List<Reserva> lista = viajeroId == null ? reservas.findAllByOrderByCreadaEnDesc()
                 : reservas.findByViajeroIdOrderByCreadaEnDesc(viajeroId);
         return lista.stream().map(this::respuesta).toList();
+    }
+
+    /** 404 si no existe, 403 si es de otro viajero. */
+    public void exigirDuenio(Long reservaId, Long viajeroId) {
+        if (!buscar(reservaId).getViajeroId().equals(viajeroId)) {
+            throw new ForbiddenException("La reserva " + reservaId + " es de otro viajero.");
+        }
     }
 
     private Reserva buscar(Long id) {

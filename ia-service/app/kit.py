@@ -62,8 +62,22 @@ def itinerario(destino: str, desde: date, hasta: date, recos: List[dict]) -> Lis
             titulo, detalle = a["nombre"], f"{a['categoria'].capitalize()} · {a['motivo']}"
         else:
             titulo, detalle = "Día libre", "Descanso o repetir lo que más te gustó"
-        plan.append({"dia": n + 1, "fecha": f.isoformat(), "titulo": titulo, "detalle": detalle})
+        # Los dias con excursion llevan su ubicacion (lat/lon) para el mapa
+        plan.append({"dia": n + 1, "fecha": f.isoformat(), "titulo": titulo, "detalle": detalle,
+                     **recomendaciones.ubicacion(titulo)})
     return plan
+
+
+def mapa(destino: str, recos: List[dict], plan: List[dict]) -> Optional[dict]:
+    """Centro del destino + excursiones recomendadas que no entraron en el itinerario (pines secundarios)."""
+    d = destino.upper()
+    if d not in DESTINOS:
+        return None
+    ciudad, lat, lon = DESTINOS[d]
+    en_plan = {p["titulo"] for p in plan}
+    extras = [{"nombre": r["nombre"], "categoria": r["categoria"], "lat": r["lat"], "lon": r["lon"]}
+              for r in recos if "lat" in r and r["nombre"] not in en_plan]
+    return {"ciudad": ciudad, "centro": {"lat": lat, "lon": lon}, "otrasExcursiones": extras}
 
 
 def generar(destino: str, desde: date, hasta: date, pax: int = 2, preferencias: Optional[List[str]] = None) -> dict:
@@ -71,11 +85,13 @@ def generar(destino: str, desde: date, hasta: date, pax: int = 2, preferencias: 
     c = consultar_clima(destino, desde, hasta)
     noches = max(1, (hasta - desde).days)
     recos = recomendaciones.recomendar(destino, prefs, c, top=10)
+    plan = itinerario(destino, desde, hasta, recos)
     return {
         "destino": destino.upper(),
         "clima": c,
         "equipaje": equipaje(destino, c, noches, prefs),
-        "itinerario": itinerario(destino, desde, hasta, recos),
+        "itinerario": plan,
+        "mapa": mapa(destino, recos, plan),
         "libros": libros.sugerir(destino),
         "pasajeros": pax,
     }

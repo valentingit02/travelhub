@@ -139,7 +139,7 @@ function Tarjeta({ p, busqueda, elegido, alternar }) {
   const detalle = Object.entries(p.detalle || {}).filter(([k]) => !DETALLE_OCULTO.has(k))
   const u = unidades(p.tipo, busqueda)
   const ultimos = p.ocupacion >= 0.75
-  const esDemoFalla = p.id === 'MOCK-HOTEL-FALLA'
+  const esDemoFalla = p.id.startsWith('MOCK-HOTEL-') && p.id.endsWith('FALLA')
   return (
     <article className={`card-res ${elegido ? 'elegida' : ''}`} style={{ '--tc': tipo.color }}>
       <div className="card-marca">

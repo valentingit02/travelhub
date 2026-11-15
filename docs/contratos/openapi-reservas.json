@@ -1,0 +1,1118 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8083",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Viaje compartido",
+      "description": "Cada amigo paga su parte con un link, sin crear cuenta"
+    },
+    {
+      "name": "Autenticacion",
+      "description": "Registro e ingreso con email y contrasena. Devuelve un JWT para el header Authorization"
+    },
+    {
+      "name": "Creditos",
+      "description": "Proteccion de precio: saldo a favor del viajero"
+    }
+  ],
+  "paths": {
+    "/api/viajeros/me": {
+      "get": {
+        "tags": [
+          "Viajeros"
+        ],
+        "summary": "Perfil del viajero de la sesion",
+        "operationId": "yo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Viajeros"
+        ],
+        "summary": "Actualiza el perfil (el email no se cambia: es el usuario de ingreso)",
+        "operationId": "actualizar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PerfilRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/viajeros/me/password": {
+      "put": {
+        "tags": [
+          "Viajeros"
+        ],
+        "summary": "Cambia la contrasena (pide la actual)",
+        "operationId": "cambiarPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambioPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/viajeros": {
+      "get": {
+        "tags": [
+          "Viajeros"
+        ],
+        "summary": "Devuelve solo al viajero de la sesion (ya no lista a todos: privacidad)",
+        "operationId": "listar",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Viajeros"
+        ],
+        "summary": "Registra un viajero sin contrasena (compatibilidad). Preferir POST /api/auth/registro",
+        "operationId": "crear",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/seguimientos": {
+      "get": {
+        "tags": [
+          "Alertas de precio"
+        ],
+        "operationId": "listar_1",
+        "parameters": [
+          {
+            "name": "viajeroId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeguimientoDestino"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Alertas de precio"
+        ],
+        "summary": "Seguir un destino: avisa por mail cuando aparezca un precio <= objetivo",
+        "operationId": "crear_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeguimientoDestino"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/reservas": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Lista las reservas del viajero de la sesion (viajeroId, si viene, tiene que ser el propio)",
+        "operationId": "listar_2",
+        "parameters": [
+          {
+            "name": "viajeroId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Reserva un paquete: verifica precios en el catalogo, cotiza, reserva en proveedores (Saga) y solicita el pago",
+        "operationId": "reservar",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clave unica por intento de compra: si se repite, devuelve la reserva ya creada",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/reservas/compartidas/{token}/pagar": {
+      "post": {
+        "tags": [
+          "Viaje compartido"
+        ],
+        "summary": "Paga (o reintenta pagar) la parte de este participante",
+        "operationId": "pagar",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagarRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vista"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/registro": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "summary": "Crea la cuenta y abre la sesion",
+        "operationId": "registro",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "summary": "Ingresa con email y contrasena (401 si no coinciden; 409 si la cuenta todavia no tiene contrasena)",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/activar": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "summary": "Crea la contrasena de una cuenta anterior al login, confirmando el documento",
+        "operationId": "activar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/viajeros/{viajeroId}/creditos": {
+      "get": {
+        "tags": [
+          "Creditos"
+        ],
+        "summary": "Saldo de credito y movimientos (se aplica solo en la proxima reserva individual)",
+        "operationId": "saldo",
+        "parameters": [
+          {
+            "name": "viajeroId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Saldo"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/viajeros/{id}": {
+      "get": {
+        "tags": [
+          "Viajeros"
+        ],
+        "operationId": "obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/reservas/{id}": {
+      "get": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Detalle de una reserva con su bitacora de Saga",
+        "operationId": "obtener_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Reservas"
+        ],
+        "summary": "Cancela la reserva y libera todo en los proveedores",
+        "operationId": "cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/reservas/compartidas/{token}": {
+      "get": {
+        "tags": [
+          "Viaje compartido"
+        ],
+        "summary": "Resumen del viaje y la parte a pagar de este participante",
+        "operationId": "ver",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vista"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seguimientos/{id}": {
+      "delete": {
+        "tags": [
+          "Alertas de precio"
+        ],
+        "operationId": "desactivar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PerfilRequest": {
+        "required": [
+          "apellido",
+          "fechaNacimiento",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "maxLength": 80,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellido": {
+            "maxLength": 80,
+            "minLength": 0,
+            "type": "string"
+          },
+          "documento": {
+            "pattern": "^$|^\\S.{4,18}\\S$",
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "preferencias": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "telefono": {
+            "maxLength": 30,
+            "minLength": 0,
+            "pattern": "^$|^[+0-9 ()-]{6,30}$",
+            "type": "string"
+          },
+          "aeropuertoOrigen": {
+            "pattern": "^$|^[A-Za-z]{3}$",
+            "type": "string"
+          }
+        }
+      },
+      "Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "documentoEnmascarado": {
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "preferencias": {
+            "type": "string"
+          },
+          "telefono": {
+            "type": "string"
+          },
+          "aeropuertoOrigen": {
+            "type": "string"
+          },
+          "ultimoIngreso": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CambioPasswordRequest": {
+        "required": [
+          "actual",
+          "nueva"
+        ],
+        "type": "object",
+        "properties": {
+          "actual": {
+            "type": "string"
+          },
+          "nueva": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          }
+        }
+      },
+      "Request": {
+        "required": [
+          "apellido",
+          "documento",
+          "email",
+          "fechaNacimiento",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "documento": {
+            "maxLength": 20,
+            "minLength": 6,
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "preferencias": {
+            "type": "string"
+          }
+        }
+      },
+      "SeguimientoDestino": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "viajeroId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "destino": {
+            "type": "string"
+          },
+          "tipoProducto": {
+            "type": "string"
+          },
+          "precioObjetivo": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PagarRequest": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "maxLength": 120,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          }
+        }
+      },
+      "Vista": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "reservaId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "destino": {
+            "type": "string"
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "pasajeros": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "organizador": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "monto": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "PENDIENTE",
+              "PROCESANDO",
+              "PAGADO",
+              "RECHAZADO",
+              "REEMBOLSADO",
+              "CANCELADO"
+            ]
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "estadoReserva": {
+            "type": "string",
+            "enum": [
+              "PENDIENTE",
+              "PAGADA",
+              "CONFIRMADA",
+              "CANCELADA",
+              "FALLIDA"
+            ]
+          },
+          "venceEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pagaron": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "participantes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "RegistroRequest": {
+        "required": [
+          "apellido",
+          "documento",
+          "email",
+          "fechaNacimiento",
+          "nombre",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "maxLength": 80,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellido": {
+            "maxLength": 80,
+            "minLength": 0,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 120,
+            "minLength": 0,
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          },
+          "documento": {
+            "maxLength": 20,
+            "minLength": 6,
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          },
+          "preferencias": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "SesionResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiraEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "viajero": {
+            "$ref": "#/components/schemas/Response"
+          }
+        }
+      },
+      "LoginRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "ActivarRequest": {
+        "required": [
+          "documento",
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "documento": {
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 72,
+            "minLength": 8,
+            "type": "string"
+          }
+        }
+      },
+      "MovimientoCredito": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "viajeroId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reservaId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "monto": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "OTORGADO",
+              "USO",
+              "DEVOLUCION"
+            ]
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Saldo": {
+        "type": "object",
+        "properties": {
+          "saldo": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "movimientos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovimientoCredito"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

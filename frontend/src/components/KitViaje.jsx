@@ -1,11 +1,15 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { api } from '../api.js'
 
-/** Kit de viaje generado por la IA: qué llevar, itinerario día por día y libros para el viaje. */
+// Leaflet pesa ~150 KB: se descarga recién cuando alguien abre un kit
+const MapaExcursiones = lazy(() => import('./MapaExcursiones.jsx'))
+
+/** Kit de viaje generado por la IA: mapa de excursiones, qué llevar, itinerario día por día y libros. */
 export default function KitViaje({ reserva, preferencias }) {
   const [kit, setKit] = useState(null)
   const [error, setError] = useState('')
   const [hechos, setHechos] = useState({})
+  const [dia, setDia] = useState(null)
 
   useEffect(() => {
     api.kit({ destino: reserva.destino, desde: reserva.desde, hasta: reserva.hasta, pax: reserva.pasajeros, preferencias: preferencias || '' })
@@ -17,6 +21,14 @@ export default function KitViaje({ reserva, preferencias }) {
 
   return (
     <div className="kit">
+      {kit.mapa && (
+        <div className="kit-mapa">
+          <h5>Dónde quedan tus excursiones <small>· tocá un día del itinerario</small></h5>
+          <Suspense fallback={<div className="mapa-kit mapa-kit-lienzo" aria-busy="true" />}>
+            <MapaExcursiones mapa={kit.mapa} itinerario={kit.itinerario} seleccionado={dia} onSeleccionar={setDia} />
+          </Suspense>
+        </div>
+      )}
       <div>
         <h5>Qué llevar {kit.clima && <small>· {kit.clima.min}° a {kit.clima.max}°</small>}</h5>
         <ul className="checklist">
@@ -33,7 +45,14 @@ export default function KitViaje({ reserva, preferencias }) {
         <h5>Itinerario sugerido</h5>
         <ol className="itinerario">
           {kit.itinerario.map((d) => (
-            <li key={d.dia}><b>Día {d.dia} · {d.titulo}</b><small>{d.detalle}</small></li>
+            <li key={d.dia} className={dia === d.dia ? 'activo' : ''}>
+              {d.lat != null && kit.mapa ? (
+                <button type="button" className="dia-mapa" onClick={() => setDia(d.dia)} aria-pressed={dia === d.dia}>
+                  <b>Día {d.dia} · {d.titulo}</b> <span className="ver-mapa">ver en el mapa</span>
+                </button>
+              ) : <b>Día {d.dia} · {d.titulo}</b>}
+              <small>{d.detalle}</small>
+            </li>
           ))}
         </ol>
       </div>

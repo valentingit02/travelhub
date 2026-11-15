@@ -24,7 +24,7 @@ class OutboxRelayTest {
     private final OutboxRelay relay = new OutboxRelay(repo, rabbit);
 
     private OutboxEvento evento() {
-        return new OutboxEvento(Eventos.RESERVA_CREADA, "com.travelhub.common.events.ReservaCreadaEvent",
+        return new OutboxEvento(Eventos.PAGO_SOLICITADO, "com.travelhub.common.events.PagoSolicitadoEvent",
                 "{\"reservaId\":1}", "cid-1");
     }
 
@@ -35,7 +35,7 @@ class OutboxRelayTest {
 
         relay.publicarPendientes();
 
-        verify(rabbit).send(eq(Eventos.EXCHANGE), eq(Eventos.RESERVA_CREADA), any(Message.class));
+        verify(rabbit).send(eq(Eventos.EXCHANGE), eq(Eventos.PAGO_SOLICITADO), any(Message.class));
         assertNotNull(e.getPublicadoEn());
     }
 

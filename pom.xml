@@ -76,6 +76,18 @@
           </execution>
         </executions>
       </plugin>
+      <!--
+        Tests en una JVM con zona horaria UTC (Postgres de Testcontainers rechaza alias viejos como
+        "America/Buenos_Aires" que manda Windows) y API de Docker 1.44 (Docker 29+ ya no acepta la 1.32 que
+        usa por defecto esta version de Testcontainers). @{argLine} conserva el agente de JaCoCo.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine} -Duser.timezone=UTC -Dapi.version=1.44</argLine>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>

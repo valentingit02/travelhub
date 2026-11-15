@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:sch="http://travelhub.com/precios/soap" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://travelhub.com/precios/soap" targetNamespace="http://travelhub.com/precios/soap">
+  <wsdl:types>
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://travelhub.com/precios/soap">
+
+  <xs:simpleType name="TipoProducto">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="VUELO"/>
+      <xs:enumeration value="HOTEL"/>
+      <xs:enumeration value="EXCURSION"/>
+      <xs:enumeration value="AUTO"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="Item">
+    <xs:sequence>
+      <xs:element name="tipoProducto" type="tns:TipoProducto"/>
+      <xs:element name="precioBase" type="xs:decimal"/>
+      <xs:element name="moneda" type="xs:string"/>
+      <xs:element name="fechaInicio" type="xs:date"/>
+      <xs:element name="fechaFin" type="xs:date"/>
+      <xs:element name="pasajeros" type="xs:int"/>
+      <xs:element name="ocupacion" type="xs:double"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Factor">
+    <xs:sequence>
+      <xs:element name="estrategia" type="xs:string"/>
+      <xs:element name="factor" type="xs:decimal"/>
+      <xs:element name="motivo" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Cotizacion">
+    <xs:sequence>
+      <xs:element name="tipoProducto" type="tns:TipoProducto"/>
+      <xs:element name="precioBase" type="xs:decimal"/>
+      <xs:element name="unidades" type="xs:long"/>
+      <xs:element name="unidad" type="xs:string"/>
+      <xs:element name="subtotal" type="xs:decimal"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="factor" type="tns:Factor"/>
+      <xs:element name="precioFinal" type="xs:decimal"/>
+      <xs:element name="moneda" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="CotizarProductoRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="item" type="tns:Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarProductoResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="cotizacion" type="tns:Cotizacion"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarPaqueteRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="item" type="tns:Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CotizarPaqueteResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="cotizacion" type="tns:Cotizacion"/>
+        <xs:element name="subtotal" type="xs:decimal"/>
+        <xs:element name="factorPaquete" type="xs:decimal"/>
+        <xs:element name="motivoDescuento" type="xs:string"/>
+        <xs:element name="total" type="xs:decimal"/>
+        <xs:element name="moneda" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="CotizarPaqueteResponse">
+    <wsdl:part element="tns:CotizarPaqueteResponse" name="CotizarPaqueteResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CotizarPaqueteRequest">
+    <wsdl:part element="tns:CotizarPaqueteRequest" name="CotizarPaqueteRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CotizarProductoRequest">
+    <wsdl:part element="tns:CotizarProductoRequest" name="CotizarProductoRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CotizarProductoResponse">
+    <wsdl:part element="tns:CotizarProductoResponse" name="CotizarProductoResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="CotizacionPort">
+    <wsdl:operation name="CotizarPaquete">
+      <wsdl:input message="tns:CotizarPaqueteRequest" name="CotizarPaqueteRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:CotizarPaqueteResponse" name="CotizarPaqueteResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CotizarProducto">
+      <wsdl:input message="tns:CotizarProductoRequest" name="CotizarProductoRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:CotizarProductoResponse" name="CotizarProductoResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CotizacionPortSoap11" type="tns:CotizacionPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="CotizarPaquete">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="CotizarPaqueteRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CotizarPaqueteResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CotizarProducto">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="CotizarProductoRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CotizarProductoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="CotizacionPortService">
+    <wsdl:port binding="tns:CotizacionPortSoap11" name="CotizacionPortSoap11">
+      <soap:address location="http://localhost:8082/ws"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

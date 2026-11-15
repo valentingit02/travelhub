@@ -23,8 +23,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * Registra cada oferta mostrada al usuario con su precio (en USD) y un vencimiento.
@@ -54,12 +55,20 @@ public class OfertaService {
         this.vigencia = vigencia;
     }
 
-    /** Registra las ofertas y devuelve solo las publicables (sin las bloqueadas por la IA). */
+    /**
+     * Registra las ofertas y devuelve solo las publicables (sin las bloqueadas por la IA).
+     * Rendimiento: una sola consulta para todas, y solo se escribe lo que cambio o esta por vencer.
+     * Antes cada busqueda reescribia todas las filas y, con muchas busquedas simultaneas del mismo
+     * destino, competian por los mismos bloqueos de Postgres (p95 de varios segundos con 50 usuarios).
+     */
     public List<OfertaProveedor> publicar(List<OfertaProveedor> ofertas) {
+        Map<String, OfertaPublicada> previas = new HashMap<>();
+        repo.findAllById(ofertas.stream().map(OfertaProveedor::id).toList())
+                .forEach(p -> previas.put(p.getId(), p));
         List<OfertaProveedor> visibles = new ArrayList<>();
         for (OfertaProveedor o : ofertas) {
             try {
-                if (registrar(o)) visibles.add(o);
+                if (registrar(o, previas.get(o.id()))) visibles.add(o);
             } catch (DataIntegrityViolationException e) {
                 visibles.add(o); // otra busqueda en paralelo la registro primero
             }
@@ -67,19 +76,19 @@ public class OfertaService {
         return visibles;
     }
 
-    private boolean registrar(OfertaProveedor o) {
-        Instant expira = Instant.now().plus(vigencia);
-        Optional<OfertaPublicada> previa = repo.findById(o.id());
-        if (previa.isEmpty()) {
-            repo.save(new OfertaPublicada(o, expira));
+    private boolean registrar(OfertaProveedor o, OfertaPublicada previa) {
+        Instant ahora = Instant.now();
+        if (previa == null) {
+            repo.save(new OfertaPublicada(o, ahora.plus(vigencia)));
             notificarPrecio(o, null);
             return true;
         }
-        OfertaPublicada p = previa.get();
-        if (p.isBloqueada()) return false;
-        BigDecimal anterior = p.getPrecio();
-        p.refrescar(o, expira);
-        repo.save(p);
+        if (previa.isBloqueada()) return false;
+        // Sin ningun cambio (precio, destino, nombre, ...) y con mas de media vigencia por delante: solo lectura
+        if (previa.mismosDatos(o) && previa.getExpiraEn().isAfter(ahora.plus(vigencia.dividedBy(2)))) return true;
+        BigDecimal anterior = previa.getPrecio();
+        previa.refrescar(o, ahora.plus(vigencia));
+        repo.save(previa);
         if (anterior.compareTo(o.precioBase()) != 0) notificarPrecio(o, anterior);
         return true;
     }
