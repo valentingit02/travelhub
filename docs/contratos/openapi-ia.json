@@ -1,0 +1,674 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TravelHub IA",
+    "description": "Anomalias de precio, resumen del viaje, recomendaciones, asistente conversacional y kit de viaje (equipaje, itinerario y libros).",
+    "version": "3.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/anomalias/evaluar": {
+      "post": {
+        "tags": [
+          "Anomalias"
+        ],
+        "summary": "Evaluar",
+        "operationId": "evaluar_api_ia_anomalias_evaluar_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/anomalias/historial": {
+      "get": {
+        "tags": [
+          "Anomalias"
+        ],
+        "summary": "Historial",
+        "operationId": "historial_api_ia_anomalias_historial_get",
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/anomalias/modelo": {
+      "get": {
+        "tags": [
+          "Anomalias"
+        ],
+        "summary": "Modelo",
+        "operationId": "modelo_api_ia_anomalias_modelo_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/anomalias/reentrenar": {
+      "post": {
+        "tags": [
+          "Anomalias"
+        ],
+        "summary": "Reentrenar",
+        "operationId": "reentrenar_api_ia_anomalias_reentrenar_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/resumen": {
+      "post": {
+        "tags": [
+          "Resumen"
+        ],
+        "summary": "Generar Resumen",
+        "operationId": "generar_resumen_api_ia_resumen_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/recomendaciones": {
+      "get": {
+        "tags": [
+          "Recomendaciones"
+        ],
+        "summary": "Recomendar",
+        "operationId": "recomendar_api_ia_recomendaciones_get",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destino"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Desde"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Hasta"
+            }
+          },
+          {
+            "name": "preferencias",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Separadas por coma: aventura,gastronomia",
+              "default": "",
+              "title": "Preferencias"
+            },
+            "description": "Separadas por coma: aventura,gastronomia"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/asistente": {
+      "post": {
+        "tags": [
+          "Asistente"
+        ],
+        "summary": "Conversar",
+        "description": "Asistente conversacional: interpreta el pedido y arma un paquete real (catalogo + precios).",
+        "operationId": "conversar_api_ia_asistente_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsistenteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/kit": {
+      "get": {
+        "tags": [
+          "Kit de viaje"
+        ],
+        "summary": "Kit De Viaje",
+        "description": "Que llevar segun el clima, itinerario dia por dia y libros para el viaje (Open Library).",
+        "operationId": "kit_de_viaje_api_ia_kit_get",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destino"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Desde"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Hasta"
+            }
+          },
+          {
+            "name": "pax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 9,
+              "minimum": 1,
+              "default": 2,
+              "title": "Pax"
+            }
+          },
+          {
+            "name": "preferencias",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Separadas por coma",
+              "default": "",
+              "title": "Preferencias"
+            },
+            "description": "Separadas por coma"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ia/libros": {
+      "get": {
+        "tags": [
+          "Kit de viaje"
+        ],
+        "summary": "Libros Para",
+        "operationId": "libros_para_api_ia_libros_get",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destino"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 5,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AsistenteRequest": {
+        "properties": {
+          "mensaje": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Mensaje",
+            "examples": [
+              "Quiero ir a la nieve en julio con mi novia"
+            ]
+          },
+          "contexto": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contexto",
+            "description": "La 'intencion' devuelta en la respuesta anterior"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mensaje"
+        ],
+        "title": "AsistenteRequest"
+      },
+      "EvaluarRequest": {
+        "properties": {
+          "tipoProducto": {
+            "type": "string",
+            "title": "Tipoproducto",
+            "examples": [
+              "AUTO"
+            ]
+          },
+          "precio": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Precio",
+            "examples": [
+              1.0
+            ]
+          },
+          "moneda": {
+            "type": "string",
+            "title": "Moneda",
+            "default": "USD"
+          },
+          "destino": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Destino",
+            "examples": [
+              "BRC"
+            ]
+          },
+          "precioAnterior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precioanterior",
+            "examples": [
+              120.0
+            ]
+          },
+          "productoRef": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Productoref"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipoProducto",
+          "precio"
+        ],
+        "title": "EvaluarRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Item": {
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "descripcion": {
+            "type": "string",
+            "title": "Descripcion"
+          },
+          "precio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "descripcion"
+        ],
+        "title": "Item"
+      },
+      "ResumenRequest": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "destino": {
+            "type": "string",
+            "title": "Destino"
+          },
+          "desde": {
+            "type": "string",
+            "format": "date",
+            "title": "Desde"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date",
+            "title": "Hasta"
+          },
+          "pasajeros": {
+            "type": "integer",
+            "maximum": 9.0,
+            "minimum": 1.0,
+            "title": "Pasajeros"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "moneda": {
+            "type": "string",
+            "title": "Moneda"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "destino",
+          "desde",
+          "hasta",
+          "pasajeros",
+          "items",
+          "total",
+          "moneda"
+        ],
+        "title": "ResumenRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

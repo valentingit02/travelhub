@@ -89,6 +89,8 @@ services:
       PRECIOS_URL: http://precios:8082
       RESERVAS_VENCIMIENTO: ${RESERVAS_VENCIMIENTO:-15m}
       RESERVAS_VENCIMIENTO_COMPARTIDA: ${RESERVAS_VENCIMIENTO_COMPARTIDA:-24h}
+      JWT_SECRET: ${JWT_SECRET:-travelhub-dev-clave-solo-para-desarrollo-local-0001}
+      JWT_DURACION: ${JWT_DURACION:-8h}
 
   pagos:
     <<: *java

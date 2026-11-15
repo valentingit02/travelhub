@@ -41,6 +41,10 @@ travelhub:
     vencimiento: ${RESERVAS_VENCIMIENTO:15m}                          # individual sin pago -> FALLIDA
     vencimiento-compartida: ${RESERVAS_VENCIMIENTO_COMPARTIDA:24h}    # compartida sin que paguen todos -> FALLIDA
     revision-ms: 30000
+  seguridad:
+    # Clave para firmar los JWT (minimo 32 caracteres). El valor por defecto es SOLO para desarrollo local.
+    jwt-secreto: ${JWT_SECRET:travelhub-dev-clave-solo-para-desarrollo-local-0001}
+    jwt-duracion: ${JWT_DURACION:8h}
 
 resilience4j:
   circuitbreaker:

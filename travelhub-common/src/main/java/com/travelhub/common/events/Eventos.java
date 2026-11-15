@@ -9,7 +9,6 @@ public final class Eventos {
     public static final String DLX = "travelhub.dlx";
     public static final String DLQ = "travelhub.dlq";
 
-    public static final String RESERVA_CREADA = "reserva.creada";
     public static final String RESERVA_CONFIRMADA = "reserva.confirmada";
     public static final String RESERVA_CANCELADA = "reserva.cancelada";
     public static final String PAGO_SOLICITADO = "pago.solicitado";

@@ -22,7 +22,20 @@ import java.util.UUID;
 public class MockProveedores {
 
     private static final Logger log = LoggerFactory.getLogger(MockProveedores.class);
-    public static final String HOTEL_FALLA = "MOCK-HOTEL-FALLA";
+    /**
+     * Hotel que siempre falla al reservar (demo de la Saga). El id es unico por destino (MOCK-HOTEL-BRC-FALLA),
+     * como cualquier oferta: si fuera el mismo en todos, las busquedas de distintos destinos pisarian la misma fila.
+     */
+    private static final String SUFIJO_FALLA = "-FALLA";
+
+    static String hotelFalla(String destino) {
+        return "MOCK-HOTEL-" + destino + SUFIJO_FALLA;
+    }
+
+    /** Tambien acepta el id viejo "MOCK-HOTEL-FALLA". */
+    static boolean esHotelFalla(String ofertaId) {
+        return ofertaId != null && ofertaId.startsWith("MOCK-HOTEL-") && ofertaId.endsWith("FALLA");
+    }
 
     private static final Map<String, List<String>> HOTELES = Map.of(
             "BRC", List.of("Llao Llao Resort", "Hotel Catedral", "Hostería del Lago"),
@@ -68,7 +81,7 @@ public class MockProveedores {
                     nombres.get(i), destino, precio, "USD", "noches", ocupacion(destino + in + i),
                     Map.of("estrellas", String.valueOf(3 + i % 3), "regimen", i == 0 ? "Desayuno" : "Solo alojamiento")));
         }
-        res.add(new OfertaProveedor(HOTEL_FALLA, TipoProducto.HOTEL, "MOCK", "Hotel Falla (demo de Saga)",
+        res.add(new OfertaProveedor(hotelFalla(destino), TipoProducto.HOTEL, "MOCK", "Hotel Falla (demo de Saga)",
                 destino, new BigDecimal("80"), "USD", "noches", 0.4, Map.of("nota", "Siempre falla al reservar")));
         return res;
     }
@@ -87,7 +100,7 @@ public class MockProveedores {
     }
 
     public String reservar(String ofertaId) {
-        if (HOTEL_FALLA.equals(ofertaId)) {
+        if (esHotelFalla(ofertaId)) {
             log.warn("Mock: el hotel {} rechaza la reserva (demo de compensacion)", ofertaId);
             throw new ExternalServiceException("El proveedor de hoteles rechazo la reserva (sin disponibilidad)");
         }

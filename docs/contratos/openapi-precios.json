@@ -1,0 +1,235 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8082",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Precios",
+      "description": "Cotizacion dinamica de productos turisticos"
+    }
+  ],
+  "paths": {
+    "/api/precios/cotizar": {
+      "post": {
+        "tags": [
+          "Precios"
+        ],
+        "summary": "Cotiza un producto y devuelve el desglose de factores aplicados",
+        "operationId": "cotizar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CotizacionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CotizacionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/precios/cotizar-paquete": {
+      "post": {
+        "tags": [
+          "Precios"
+        ],
+        "summary": "Cotiza un paquete (Composite) con descuento si combina 2 o mas tipos de producto",
+        "operationId": "cotizarPaquete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CotizacionPaqueteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CotizacionPaqueteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CotizacionRequest": {
+        "required": [
+          "fechaFin",
+          "fechaInicio",
+          "moneda",
+          "ocupacion",
+          "pasajeros",
+          "precioBase",
+          "tipoProducto"
+        ],
+        "type": "object",
+        "properties": {
+          "tipoProducto": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "precioBase": {
+            "minimum": 0.01,
+            "exclusiveMinimum": false,
+            "type": "number"
+          },
+          "moneda": {
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "fechaInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "fechaFin": {
+            "type": "string",
+            "format": "date"
+          },
+          "pasajeros": {
+            "maximum": 9,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "ocupacion": {
+            "maximum": 1.0,
+            "exclusiveMaximum": false,
+            "minimum": 0.0,
+            "exclusiveMinimum": false,
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "CotizacionResponse": {
+        "type": "object",
+        "properties": {
+          "tipoProducto": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "precioBase": {
+            "type": "number"
+          },
+          "unidades": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "factores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactorAplicado"
+            }
+          },
+          "precioFinal": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          }
+        }
+      },
+      "FactorAplicado": {
+        "type": "object",
+        "properties": {
+          "estrategia": {
+            "type": "string"
+          },
+          "factor": {
+            "type": "number"
+          },
+          "motivo": {
+            "type": "string"
+          }
+        }
+      },
+      "CotizacionPaqueteRequest": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CotizacionRequest"
+            }
+          }
+        }
+      },
+      "CotizacionPaqueteResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CotizacionResponse"
+            }
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "factorPaquete": {
+            "type": "number"
+          },
+          "motivoDescuento": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
