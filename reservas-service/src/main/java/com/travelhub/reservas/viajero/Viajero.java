@@ -1,6 +1,7 @@
 package com.travelhub.reservas.viajero;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
@@ -30,6 +31,20 @@ public class Viajero {
     @Column(length = 200)
     private String preferencias;
 
+    /** Hash BCrypt. Null en cuentas creadas antes del login: se completa con /api/auth/activar. */
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
+
+    @Column(length = 30)
+    private String telefono;
+
+    /** Aeropuerto desde el que suele salir (IATA): precarga el buscador. */
+    @Column(name = "aeropuerto_origen", length = 3)
+    private String aeropuertoOrigen;
+
+    @Column(name = "ultimo_ingreso")
+    private Instant ultimoIngreso;
+
     protected Viajero() { }
 
     public Viajero(String nombre, String apellido, String email, String documento,
@@ -42,6 +57,21 @@ public class Viajero {
         this.preferencias = preferencias;
     }
 
+    public void actualizarPerfil(String nombre, String apellido, String documento, LocalDate fechaNacimiento,
+                                 String preferencias, String telefono, String aeropuertoOrigen) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.documento = documento;
+        this.fechaNacimiento = fechaNacimiento;
+        this.preferencias = preferencias;
+        this.telefono = telefono;
+        this.aeropuertoOrigen = aeropuertoOrigen;
+    }
+
+    public void cambiarPassword(String nuevoHash) { this.passwordHash = nuevoHash; }
+    public void registrarIngreso() { this.ultimoIngreso = Instant.now(); }
+    public boolean tienePassword() { return passwordHash != null && !passwordHash.isBlank(); }
+
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public String getApellido() { return apellido; }
@@ -49,4 +79,8 @@ public class Viajero {
     public String getDocumento() { return documento; }
     public LocalDate getFechaNacimiento() { return fechaNacimiento; }
     public String getPreferencias() { return preferencias; }
+    public String getPasswordHash() { return passwordHash; }
+    public String getTelefono() { return telefono; }
+    public String getAeropuertoOrigen() { return aeropuertoOrigen; }
+    public Instant getUltimoIngreso() { return ultimoIngreso; }
 }

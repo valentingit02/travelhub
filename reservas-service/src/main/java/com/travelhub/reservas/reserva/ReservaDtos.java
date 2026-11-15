@@ -19,12 +19,19 @@ public final class ReservaDtos {
     /** El cliente SOLO elige que producto quiere: precio y descripcion los pone el servidor. */
     public record ItemRequest(@NotNull TipoProducto tipo, @NotBlank @Size(max = 1000) String productoId) { }
 
-    /** compartirCon: emails de los amigos que pagan su parte (vacio = viaje individual). */
-    public record Request(@NotNull Long viajeroId, @NotBlank @Size(min = 3, max = 3) String destino,
+    /**
+     * compartirCon: emails de los amigos que pagan su parte (vacio = viaje individual).
+     * viajeroId es opcional: el organizador es siempre el de la sesion (si viene, tiene que coincidir).
+     */
+    public record Request(Long viajeroId, @NotBlank @Size(min = 3, max = 3) String destino,
                           @NotNull @FutureOrPresent LocalDate desde, @NotNull LocalDate hasta,
                           @NotNull @Min(1) @Max(9) Integer pasajeros,
                           @NotEmpty @Size(max = 8) List<@Valid ItemRequest> items,
-                          @Size(max = 8) List<@NotBlank @Email String> compartirCon) { }
+                          @Size(max = 8) List<@NotBlank @Email String> compartirCon) {
+        public Request conViajero(Long id) {
+            return new Request(id, destino, desde, hasta, pasajeros, items, compartirCon);
+        }
+    }
 
     public record ItemResponse(Long id, TipoProducto tipo, String productoId, String descripcion,
                                BigDecimal precioBase, BigDecimal precioCotizado, String refExterna, EstadoItem estado) {

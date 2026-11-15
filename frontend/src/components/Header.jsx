@@ -19,8 +19,11 @@ export default function Header({ vista, irA, viajero, cantidad, onLogin, onLogou
         <div className="usuario">
           {viajero ? (
             <>
-              <span className="avatar">{viajero.nombre?.[0]?.toUpperCase()}</span>
-              <span className="usuario-nombre">{viajero.nombre}</span>
+              <button className={`usuario-perfil ${vista === 'perfil' ? 'activo' : ''}`} onClick={() => irA('perfil')}
+                title="Mi perfil" aria-label="Mi perfil">
+                <span className="avatar">{viajero.nombre?.[0]?.toUpperCase()}</span>
+                <span className="usuario-nombre">{viajero.nombre}</span>
+              </button>
               <button className="btn btn-linea-claro btn-chico" onClick={onLogout}>Salir</button>
             </>
           ) : (
