@@ -1,4 +1,5 @@
-### Tambien se pueden correr desde VS Code (extension REST Client) o IntelliJ.
+### Tambien se pueden correr desde VS Code (extension REST Client).
+### Los pasos 4 a 6 necesitan el token del paso 3b (o del 3, copiandolo en @token).
 @gw = http://localhost:8080
 
 ### 1. Buscar todo para Bariloche
@@ -18,18 +19,49 @@ Content-Type: application/json
 { "tipoProducto": "HOTEL", "precioBase": 100, "moneda": "USD", "fechaInicio": "2027-04-10",
   "fechaFin": "2027-04-13", "pasajeros": 2, "ocupacion": 0.6 }
 
-### 3. Registrar un viajero
-POST {{gw}}/api/viajeros
+### 3. Crear la cuenta (devuelve el token de la sesion)
+# @name registro
+POST {{gw}}/api/auth/registro
 Content-Type: application/json
 
-{ "nombre": "Ana", "apellido": "Perez", "email": "ana@test.com", "documento": "30111222",
+{ "nombre": "Ana", "apellido": "Perez", "email": "ana@test.com", "password": "secreta123", "documento": "30111222",
   "fechaNacimiento": "1995-05-10", "preferencias": "aventura,gastronomia" }
+
+### 3b. Ingresar (si la cuenta ya existe). Los pasos siguientes usan este token.
+# @name login
+POST {{gw}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "ana@test.com", "password": "secreta123" }
+
+###
+@token = {{login.response.body.token}}
+
+### 3c. Sin token -> 401 (los datos de cada viajero son privados)
+GET {{gw}}/api/reservas
+
+### 3d. Con token pero pidiendo las reservas de otro viajero -> 403
+GET {{gw}}/api/reservas?viajeroId=999
+Authorization: Bearer {{token}}
+
+### 3e. Mi perfil
+GET {{gw}}/api/viajeros/me
+Authorization: Bearer {{token}}
+
+###
+PUT {{gw}}/api/viajeros/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "nombre": "Ana", "apellido": "Perez", "fechaNacimiento": "1995-05-10", "preferencias": "aventura,naturaleza",
+  "telefono": "+54 11 5555-5555", "aeropuertoOrigen": "EZE" }
 
 ### 4. Reservar un paquete OK (vuelo + hotel + auto)
 POST {{gw}}/api/reservas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
-{ "viajeroId": 1, "destino": "BRC", "desde": "2027-07-10", "hasta": "2027-07-15", "pasajeros": 2,
+{ "destino": "BRC", "desde": "2027-07-10", "hasta": "2027-07-15", "pasajeros": 2,
   "items": [
     { "tipo": "VUELO", "productoId": "MOCK-VUELO-AEP-BRC-0", "descripcion": "Vuelo AEP-BRC", "precioBase": 150, "moneda": "USD", "ocupacion": 0.5 },
     { "tipo": "HOTEL", "productoId": "MOCK-HOTEL-BRC-0", "descripcion": "Llao Llao Resort", "precioBase": 120, "moneda": "USD", "ocupacion": 0.6 },
@@ -38,16 +70,18 @@ Content-Type: application/json
 
 ### 5. Demo Saga: el hotel falla y se cancela el vuelo automaticamente
 POST {{gw}}/api/reservas
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
-{ "viajeroId": 1, "destino": "BRC", "desde": "2027-08-10", "hasta": "2027-08-12", "pasajeros": 1,
+{ "destino": "BRC", "desde": "2027-08-10", "hasta": "2027-08-12", "pasajeros": 1,
   "items": [
     { "tipo": "VUELO", "productoId": "MOCK-VUELO-AEP-BRC-1", "descripcion": "Vuelo AEP-BRC", "precioBase": 150, "moneda": "USD", "ocupacion": 0.5 },
-    { "tipo": "HOTEL", "productoId": "MOCK-HOTEL-FALLA", "descripcion": "Hotel Falla", "precioBase": 80, "moneda": "USD", "ocupacion": 0.4 }
+    { "tipo": "HOTEL", "productoId": "MOCK-HOTEL-BRC-FALLA", "descripcion": "Hotel Falla", "precioBase": 80, "moneda": "USD", "ocupacion": 0.4 }
   ] }
 
 ### 6. Ver reservas con su bitacora de Saga
-GET {{gw}}/api/reservas?viajeroId=1
+GET {{gw}}/api/reservas
+Authorization: Bearer {{token}}
 
 ### 7. Demo IA: cargar un auto a 1 USD -> la IA lo marca y el catalogo lo pone EN REVISION
 PUT http://localhost:8081/api/catalogo/autos/2
