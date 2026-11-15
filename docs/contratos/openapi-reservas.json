@@ -1006,6 +1006,12 @@
             "type": "string",
             "format": "date-time"
           },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "viajero": {
             "$ref": "#/components/schemas/Response"
           }

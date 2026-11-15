@@ -68,7 +68,7 @@
         "tags": [
           "Autos"
         ],
-        "summary": "Modifica un auto (incluido su precio)",
+        "summary": "Modifica un auto, incluido su precio (ADMIN)",
         "operationId": "actualizar",
         "parameters": [
           {
@@ -102,13 +102,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       },
       "delete": {
         "tags": [
           "Autos"
         ],
-        "summary": "Baja logica de un auto",
+        "summary": "Baja logica de un auto (ADMIN)",
         "operationId": "desactivar",
         "parameters": [
           {
@@ -125,7 +130,12 @@
           "204": {
             "description": "No Content"
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/catalogo/reservas-proveedor": {
@@ -208,7 +218,7 @@
         "tags": [
           "Ofertas"
         ],
-        "summary": "Aprueba manualmente una oferta bloqueada",
+        "summary": "Aprueba manualmente una oferta bloqueada (ADMIN)",
         "operationId": "aprobar",
         "parameters": [
           {
@@ -231,7 +241,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/catalogo/autos": {
@@ -271,7 +286,7 @@
         "tags": [
           "Autos"
         ],
-        "summary": "Da de alta un auto",
+        "summary": "Da de alta un auto (ADMIN)",
         "operationId": "crear",
         "requestBody": {
           "content": {
@@ -294,7 +309,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/catalogo/autos/{id}/aprobar": {
@@ -302,7 +322,7 @@
         "tags": [
           "Autos"
         ],
-        "summary": "Aprueba un auto que la IA marco como anomalo y lo vuelve a publicar",
+        "summary": "Aprueba un auto que la IA marco como anomalo y lo vuelve a publicar (ADMIN)",
         "operationId": "aprobar_1",
         "parameters": [
           {
@@ -326,7 +346,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/catalogo/vuelos": {
@@ -499,7 +524,7 @@
         "tags": [
           "Ofertas"
         ],
-        "summary": "Ofertas bloqueadas por la IA (precio anomalo)",
+        "summary": "Ofertas bloqueadas por la IA, precio anomalo (ADMIN)",
         "operationId": "bloqueadas",
         "responses": {
           "200": {
@@ -515,7 +540,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
       }
     },
     "/api/catalogo/hoteles": {
@@ -1124,6 +1154,13 @@
             }
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }

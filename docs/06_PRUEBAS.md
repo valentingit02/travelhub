@@ -6,13 +6,13 @@ Todas las salidas están guardadas en [`docs/evidencias/`](evidencias/) y se pue
 | Tipo | Herramienta | Qué cubre | Resultado | Evidencia |
 |---|---|---|---|---|
 | Unitarias Java | JUnit 5 + Mockito | Estrategias de precio, Factory, Saga, Outbox, login, tokens, ofertas, reparto del viaje compartido | Todas OK | [tests-java.txt](evidencias/tests-java.txt) |
-| Integración Java | Testcontainers (Postgres, RabbitMQ) | Repository contra Postgres real; pagos consumiendo y publicando en RabbitMQ real | OK: 66 tests Java, 0 salteados | [tests-java.txt](evidencias/tests-java.txt) |
-| Seguridad (capa HTTP) | MockMvc + JWT reales | 401 sin sesión, 403 con datos ajenos, rutas públicas, validaciones | 12/12 OK | `SeguridadWebTest` |
+| Integración Java | Testcontainers (Postgres, RabbitMQ) | Repository contra Postgres real; pagos consumiendo y publicando en RabbitMQ real | OK: 76 tests Java, 0 salteados | [tests-java.txt](evidencias/tests-java.txt) |
+| Seguridad (capa HTTP) | MockMvc + JWT reales | 401 sin sesión, 403 con datos ajenos, rutas públicas, validaciones; rol ADMIN en el catálogo | 12/12 y 9/9 OK | `SeguridadWebTest`, `SeguridadCatalogoWebTest` |
 | Local vs remota | JUnit | Misma cotización por llamada directa, REST y SOAP, con tiempos | OK | [invocacion-local-vs-remota.txt](evidencias/invocacion-local-vs-remota.txt) |
 | IA | pytest | Anomalías, consumidor de la cola, resumen con plantilla, privacidad del prompt, recomendaciones, asistente, kit, mapa | 25/25 OK | [tests-ia.txt](evidencias/tests-ia.txt) |
 | Validación del modelo | `evaluar_modelo.py` | Matriz de confusión, precisión, recall y latencia en 3 escenarios | Cumple RIA01 y RIA02 | [evaluacion-modelo-ia.txt](evidencias/evaluacion-modelo-ia.txt) |
-| Funcional e integración de punta a punta | `tests/e2e/prueba_funcional.py` | Todo el sistema levantado: REST, SOAP, login, Saga, cola, mails, viaje compartido, IA sincrónica y asincrónica, APIs externas, DLQ, Zipkin | 45/45 OK | [prueba-funcional-e2e.txt](evidencias/prueba-funcional-e2e.txt) |
-| Carga | k6 | Búsqueda con 50 usuarios simultáneos | p95 115 ms (meta < 500 ms), 0 % errores | [k6-carga-50-usuarios.txt](evidencias/k6-carga-50-usuarios.txt) |
+| Funcional e integración de punta a punta | `tests/e2e/prueba_funcional.py` | Todo el sistema levantado: REST, SOAP, login, rol ADMIN, Saga, cola, mails, viaje compartido, IA sincrónica y asincrónica, APIs externas, DLQ, Zipkin | 53/53 OK | [prueba-funcional-e2e.txt](evidencias/prueba-funcional-e2e.txt) |
+| Carga | k6 | Búsqueda con 50 usuarios simultáneos | p95 de 115 a 406 ms recién arrancado y 60 ms en caliente (meta < 500 ms), 0 % errores | [k6-carga-50-usuarios.txt](evidencias/k6-carga-50-usuarios.txt) |
 | Manuales | `tests/http/demo.http`, `tests/soap/*.xml` | Recorrido de la demo con REST Client / SoapUI | — | — |
 | CI | GitHub Actions | Compila, corre los tests Java (con Testcontainers), los de la IA, valida el modelo y compila el frontend en cada PR | Verde en `main` | `.github/workflows/ci.yml` |
 
@@ -34,8 +34,8 @@ docker run --rm -v ./tests/k6:/k6 -e GW=http://host.docker.internal:8080 grafana
 
 ## 6.3 Ejecución local y remota
 - **Local:** dentro de un servicio, las capas se invocan directamente (ej. `CotizadorService` desde el controller). El test
-  `InvocacionLocalVsRemotaTest` mide 0,13 ms por llamada.
-- **Remota sincrónica:** entre servicios por REST (17,6 ms) o SOAP (18,7 ms), siempre a través de contratos publicados.
+  `InvocacionLocalVsRemotaTest` mide 0,17 ms por llamada.
+- **Remota sincrónica:** entre servicios por REST (15,8 ms) o SOAP (17,1 ms), siempre a través de contratos publicados.
 - **Remota asincrónica:** por RabbitMQ. La prueba de punta a punta muestra una reserva que pasa de PENDIENTE a CONFIRMADA
   sola, en unos 3 segundos, cuando `pagos` procesa el evento.
 
@@ -55,8 +55,8 @@ se reescribía en cada búsqueda.
 
 | Medición (50 usuarios) | Antes | Después |
 |---|---|---|
-| p95 recién arrancado | 9,1 s | 115 ms |
-| p95 en caliente | 935 ms | 50 ms |
+| p95 recién arrancado | 9,1 s | 115 a 406 ms (varía entre corridas) |
+| p95 en caliente | 935 ms | 50 a 60 ms |
 | Mediana en caliente | 95 ms | 14 ms |
 | Errores | 0 % | 0 % |
 

@@ -45,6 +45,8 @@ travelhub:
     # Clave para firmar los JWT (minimo 32 caracteres). El valor por defecto es SOLO para desarrollo local.
     jwt-secreto: ${JWT_SECRET:travelhub-dev-clave-solo-para-desarrollo-local-0001}
     jwt-duracion: ${JWT_DURACION:8h}
+    # Emails de los operadores (separados por coma): su token lleva el rol ADMIN
+    admins: ${ADMIN_EMAILS:}
 
 resilience4j:
   circuitbreaker:

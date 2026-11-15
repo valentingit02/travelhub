@@ -13,9 +13,9 @@ OK   [Logging] X-Correlation-Id en la respuesta
 OK   [Patrones] Strategy: julio mas caro que abril -> julio=364.65 abril=252.45
 OK   [Errores] fechas invertidas -> 400 con formato ApiError -> La fecha de fin debe ser posterior a la de inicio
 OK   [Seguridad] registro con contrasena
-OK   [Saga/Facade] reserva creada (PENDIENTE) -> #22
+OK   [Saga/Facade] reserva creada (PENDIENTE) -> #25
 OK   [Mensajeria] pago asincronico por RabbitMQ -> CONFIRMADA -> CONFIRMADA
-OK   [Mensajeria] mail de confirmacion (consumidor notificaciones) -> TravelHub · Tu viaje a BRC está confirmado (#22)
+OK   [Mensajeria] mail de confirmacion (consumidor notificaciones) -> TravelHub · Tu viaje a BRC está confirmado (#25)
 OK   [Saga] hotel falla -> compensa el vuelo -> FALLIDA ['COTIZAR', 'RESERVAR_VUELO', 'RESERVAR_HOTEL', 'COMPENSAR_VUELO']
 OK   [Viaje compartido] reserva compartida con invitado
 OK   [Viaje compartido] mail de invitacion al amigo
@@ -33,7 +33,15 @@ OK   [API externa] Open-Meteo (clima real en el kit) -> mismas fechas del año an
 OK   [API externa] Open Library (libros) -> Open Library
 OK   [IA] kit con mapa de excursiones
 OK   [IA] modelo de anomalias entrenado -> {"version":"v2-ref+1grupos-e1","minMuestrasPorGrupo":20,"referencia":{"VUELO":{"medianaUsd
+OK   [Seguridad] el operador tiene el rol ADMIN -> admin@travelhub.local -> ['ADMIN'] (debe estar en ADMIN_EMAILS)
+OK   [Seguridad] ver autos sigue siendo publico
+OK   [Seguridad] cambiar un precio sin token -> 401
+OK   [Seguridad] cambiar un precio siendo viajero -> 403
+OK   [Seguridad] aprobar productos siendo viajero -> 403
+OK   [Seguridad] el operador cambia el precio (ADMIN) -> HTTP 200
 OK   [IA (async)] auto a 1 USD -> la IA lo marca por la cola -> enRevision=True
+OK   [Seguridad] el operador aprueba el auto y vuelve a publicarse -> HTTP 200
+OK   [Seguridad] reservar en el proveedor desde afuera -> bloqueado por el gateway -> HTTP 403
 OK   [Mensajeria] colas declaradas con consumidores -> 14 colas
 OK   [Mensajeria] dead letter queue
 INFO [Mensajeria] mensajes en travelhub.dlq: 3
@@ -45,4 +53,4 @@ OK   [Salud] health pagos
 OK   [Salud] health notificaciones
 OK   [Salud] health ia
 
-TOTAL: 45/45 OK
+TOTAL: 53/53 OK

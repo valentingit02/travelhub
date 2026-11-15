@@ -196,16 +196,46 @@ check("IA", "kit con mapa de excursiones", d.get("mapa") and any("lat" in x for 
 c, t, _ = req("GET", f"{GW}/api/ia/anomalias/modelo")
 check("IA", "modelo de anomalias entrenado", c == 200, t[:90])
 
-# Anomalia por la cola: precio.cambiado -> ia -> anomalia.detectada -> catalogo pone el auto en revision
-c, t, _ = req("GET", "http://localhost:8081/api/catalogo/autos/2")
+# ------------------------------------------------------------------ Rol ADMIN (operaciones de operador)
+# Cuenta de operador: su email tiene que estar en ADMIN_EMAILS (docker-compose usa admin@travelhub.local por defecto)
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@travelhub.local")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin-demo-123")
+c, t, _ = req("POST", f"{GW}/api/auth/login", {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+if c != 200:   # primera vez: se crea la cuenta del operador
+    c, t, _ = req("POST", f"{GW}/api/auth/registro", {"nombre": "Operador", "apellido": "TravelHub", "email": ADMIN_EMAIL,
+                  "password": ADMIN_PASSWORD, "documento": "20000000", "fechaNacimiento": "1990-01-01"})
+sesion_admin = js(t) or {}
+admin = {"Authorization": f"Bearer {sesion_admin.get('token')}"}
+check("Seguridad", "el operador tiene el rol ADMIN", "ADMIN" in (sesion_admin.get("roles") or []),
+      f"{ADMIN_EMAIL} -> {sesion_admin.get('roles')} (debe estar en ADMIN_EMAILS)")
+
+AUTO = f"{GW}/api/catalogo/autos/2"
+c, t, _ = req("GET", AUTO)
 auto = js(t) or {}
+check("Seguridad", "ver autos sigue siendo publico", c == 200 and auto)
 if auto:
     original = dict(auto)
     cuerpo = {k: auto[k] for k in ["destinoIata", "categoria", "marca", "modelo", "plazas", "transmisionAutomatica", "moneda"]}
-    c, _, _ = req("PUT", "http://localhost:8081/api/catalogo/autos/2", {**cuerpo, "precioBaseDia": 1})
-    rev = esperar(lambda: (js(req("GET", "http://localhost:8081/api/catalogo/autos/2")[1]) or {}).get("enRevision"), 30)
+    check("Seguridad", "cambiar un precio sin token -> 401", req("PUT", AUTO, {**cuerpo, "precioBaseDia": 1})[0] == 401)
+    check("Seguridad", "cambiar un precio siendo viajero -> 403",
+          req("PUT", AUTO, {**cuerpo, "precioBaseDia": 1}, headers=auth)[0] == 403)
+    check("Seguridad", "aprobar productos siendo viajero -> 403",
+          req("POST", f"{AUTO}/aprobar", headers=auth)[0] == 403)
+
+    # Anomalia por la cola: precio.cambiado -> ia -> anomalia.detectada -> catalogo pone el auto en revision
+    c, _, _ = req("PUT", AUTO, {**cuerpo, "precioBaseDia": 1}, headers=admin)
+    check("Seguridad", "el operador cambia el precio (ADMIN)", c == 200, f"HTTP {c}")
+    rev = esperar(lambda: (js(req("GET", AUTO)[1]) or {}).get("enRevision"), 30)
     check("IA (async)", "auto a 1 USD -> la IA lo marca por la cola", rev, "enRevision=True" if rev else "no se marco")
-    req("PUT", "http://localhost:8081/api/catalogo/autos/2", {**cuerpo, "precioBaseDia": original["precioBaseDia"]})
+    # El operador corrige el precio y aprueba el auto: queda como estaba
+    req("PUT", AUTO, {**cuerpo, "precioBaseDia": original["precioBaseDia"]}, headers=admin)
+    time.sleep(2)
+    c, t, _ = req("POST", f"{AUTO}/aprobar", headers=admin)
+    check("Seguridad", "el operador aprueba el auto y vuelve a publicarse",
+          c == 200 and not (js(t) or {}).get("enRevision"), f"HTTP {c}")
+
+c, _, _ = req("POST", f"{GW}/api/catalogo/reservas-proveedor", {"tipo": "HOTEL", "productoId": "x"})
+check("Seguridad", "reservar en el proveedor desde afuera -> bloqueado por el gateway", c == 403, f"HTTP {c}")
 
 # ------------------------------------------------------------------ Colas, DLQ y trazas
 cred = base64.b64encode(b"guest:guest").decode()

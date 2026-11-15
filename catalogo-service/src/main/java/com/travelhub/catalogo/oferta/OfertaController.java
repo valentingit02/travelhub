@@ -1,6 +1,7 @@
 package com.travelhub.catalogo.oferta;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -28,13 +29,15 @@ public class OfertaController {
     }
 
     @GetMapping("/bloqueadas")
-    @Operation(summary = "Ofertas bloqueadas por la IA (precio anomalo)")
+    @Operation(summary = "Ofertas bloqueadas por la IA, precio anomalo (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public List<OfertaPublicada> bloqueadas() {
         return service.bloqueadas();
     }
 
     @PostMapping("/aprobar")
-    @Operation(summary = "Aprueba manualmente una oferta bloqueada")
+    @Operation(summary = "Aprueba manualmente una oferta bloqueada (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public OfertaPublicada aprobar(@RequestParam String id) {
         return service.aprobar(id);
     }

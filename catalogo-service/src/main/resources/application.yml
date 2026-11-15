@@ -41,6 +41,9 @@ spring:
       time-to-live: 15m      # las tarifas no se cachean mas de unos minutos
 
 travelhub:
+  seguridad:
+    # Misma clave que reservas-service: el catalogo valida sus tokens (rol ADMIN para operaciones de operador)
+    jwt-secreto: ${JWT_SECRET:travelhub-dev-clave-solo-para-desarrollo-local-0001}
   ofertas:
     vigencia: 60m            # tiempo para reservar una oferta sin volver a buscar
   tipo-cambio:

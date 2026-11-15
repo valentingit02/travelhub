@@ -101,7 +101,7 @@ public class AuthService {
         v.registrarIngreso();
         Viajero guardado = viajeros.save(v);
         TokenService.Emitido t = tokens.emitir(guardado);
-        return new AuthDtos.SesionResponse(t.token(), t.expiraEn(), ViajeroDtos.Response.from(guardado));
+        return new AuthDtos.SesionResponse(t.token(), t.expiraEn(), t.roles(), ViajeroDtos.Response.from(guardado));
     }
 
     private static String normalizar(String email) {

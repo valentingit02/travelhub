@@ -1,6 +1,7 @@
 package com.travelhub.catalogo.auto;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -34,26 +35,30 @@ public class AutoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Da de alta un auto")
+    @Operation(summary = "Da de alta un auto (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public AutoResponse crear(@Valid @RequestBody AutoRequest request) {
         return service.crear(request);
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Modifica un auto (incluido su precio)")
+    @Operation(summary = "Modifica un auto, incluido su precio (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public AutoResponse actualizar(@PathVariable Long id, @Valid @RequestBody AutoRequest request) {
         return service.actualizar(id, request);
     }
 
     @PostMapping("/{id}/aprobar")
-    @Operation(summary = "Aprueba un auto que la IA marco como anomalo y lo vuelve a publicar")
+    @Operation(summary = "Aprueba un auto que la IA marco como anomalo y lo vuelve a publicar (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public AutoResponse aprobar(@PathVariable Long id) {
         return service.aprobarRevision(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Baja logica de un auto")
+    @Operation(summary = "Baja logica de un auto (ADMIN)")
+    @SecurityRequirement(name = "bearer")
     public void desactivar(@PathVariable Long id) {
         service.desactivar(id);
     }

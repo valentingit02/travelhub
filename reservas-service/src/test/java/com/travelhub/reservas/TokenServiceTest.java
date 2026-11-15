@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,6 +67,26 @@ class TokenServiceTest {
         String token = new TokenService(beans("otra-clave-distinta-tambien-de-32-caracteres").encoder(), Duration.ofHours(1))
                 .emitir(viajero(7L)).token();
         assertThrows(JwtException.class, () -> beans(CLAVE).decoder().decode(token));
+    }
+
+    @Test
+    void elTokenDeUnOperadorLlevaElRolAdmin() throws Exception {
+        Beans b = beans(CLAVE);
+        TokenService tokens = new TokenService(b.encoder(), Duration.ofHours(1), List.of(" ANA@test.com ", ""));
+
+        TokenService.Emitido t = tokens.emitir(viajero(7L));   // email ana@test.com (mayusculas y espacios no importan)
+
+        assertEquals(List.of("ADMIN"), t.roles());
+        assertEquals(List.of("ADMIN"), b.decoder().decode(t.token()).getClaimAsStringList("roles"));
+    }
+
+    @Test
+    void unViajeroComunNoTieneRoles() throws Exception {
+        Beans b = beans(CLAVE);
+        TokenService tokens = new TokenService(b.encoder(), Duration.ofHours(1), List.of("otro@test.com"));
+        TokenService.Emitido t = tokens.emitir(viajero(7L));
+        assertTrue(t.roles().isEmpty());
+        assertTrue(b.decoder().decode(t.token()).getClaimAsStringList("roles").isEmpty());
     }
 
     @Test

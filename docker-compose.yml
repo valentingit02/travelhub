@@ -65,6 +65,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/catalogo_db
       REDIS_HOST: redis
       PROVEEDORES_MODO: ${PROVEEDORES_MODO:-mock}
+      JWT_SECRET: ${JWT_SECRET:-travelhub-dev-clave-solo-para-desarrollo-local-0001}
       DUFFEL_TOKEN: ${DUFFEL_TOKEN:-}
       HOTELBEDS_HOTEL_API_KEY: ${HOTELBEDS_HOTEL_API_KEY:-}
       HOTELBEDS_HOTEL_SECRET: ${HOTELBEDS_HOTEL_SECRET:-}
@@ -91,6 +92,7 @@ services:
       RESERVAS_VENCIMIENTO_COMPARTIDA: ${RESERVAS_VENCIMIENTO_COMPARTIDA:-24h}
       JWT_SECRET: ${JWT_SECRET:-travelhub-dev-clave-solo-para-desarrollo-local-0001}
       JWT_DURACION: ${JWT_DURACION:-8h}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-admin@travelhub.local}
 
   pagos:
     <<: *java
