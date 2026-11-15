@@ -1,0 +1,6 @@
+# InvocacionLocalVsRemotaTest (precios-service)
+=== Invocacion local vs remota (50 llamadas) ===
+Local (misma JVM): 0,282 ms
+Remota REST/JSON:  21,996 ms
+Remota SOAP/XML:   34,926 ms
+

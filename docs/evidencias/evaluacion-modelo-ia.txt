@@ -1,0 +1,18 @@
+
+=== A. Sin historial (referencia, umbral z>=4) ===
+                 Pred anomalia   Pred normal
+Real anomalia              240             0
+Real normal                  0          1600
+Precision: 1.000   Recall: 1.000 (RNF >= 0.85)   Latencia p95: 112.41 ms (RNF < 200 ms)
+
+=== B. Con historial propio del destino (z>=3 + Isolation Forest) ===
+                 Pred anomalia   Pred normal
+Real anomalia               60             0
+Real normal                  7           293
+Precision: 0.896   Recall: 1.000 (RNF >= 0.85)   Latencia p95: 39.72 ms (RNF < 200 ms)
+
+=== C. Variacion respecto del precio anterior ===
+                 Pred anomalia   Pred normal
+Real anomalia              200             0
+Real normal                  0           200
+Precision: 1.000   Recall: 1.000 (RNF >= 0.85)   Latencia p95: 85.06 ms (RNF < 200 ms)

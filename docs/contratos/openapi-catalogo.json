@@ -1,0 +1,1130 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tipo de cambio",
+      "description": "Todos los precios se normalizan a USD"
+    },
+    {
+      "name": "Autos",
+      "description": "Inventario propio de autos de alquiler"
+    },
+    {
+      "name": "Busqueda",
+      "description": "Vuelos (Duffel), hoteles y excursiones (Hotelbeds) y autos propios"
+    },
+    {
+      "name": "Reservas en proveedores",
+      "description": "Uso interno de la Saga de reservas-service"
+    },
+    {
+      "name": "Ofertas",
+      "description": "Precio verificado por el servidor para reservar"
+    }
+  ],
+  "paths": {
+    "/api/catalogo/autos/{id}": {
+      "get": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Obtiene un auto por id",
+        "operationId": "obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Modifica un auto (incluido su precio)",
+        "operationId": "actualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Baja logica de un auto",
+        "operationId": "desactivar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/catalogo/reservas-proveedor": {
+      "post": {
+        "tags": [
+          "Reservas en proveedores"
+        ],
+        "summary": "Reserva un producto en su proveedor (Duffel, Hotelbeds o inventario propio)",
+        "operationId": "reservar",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReservaProveedorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservaProveedorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reservas en proveedores"
+        ],
+        "summary": "Compensacion: cancela una reserva en el proveedor",
+        "operationId": "cancelar",
+        "parameters": [
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "VUELO",
+                "HOTEL",
+                "EXCURSION",
+                "AUTO"
+              ]
+            }
+          },
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reservaRef",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/catalogo/ofertas/aprobar": {
+      "post": {
+        "tags": [
+          "Ofertas"
+        ],
+        "summary": "Aprueba manualmente una oferta bloqueada",
+        "operationId": "aprobar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfertaPublicada"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/autos": {
+      "get": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Lista autos activos, opcionalmente filtrados por destino IATA",
+        "operationId": "listar",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AutoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Da de alta un auto",
+        "operationId": "crear",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/autos/{id}/aprobar": {
+      "post": {
+        "tags": [
+          "Autos"
+        ],
+        "summary": "Aprueba un auto que la IA marco como anomalo y lo vuelve a publicar",
+        "operationId": "aprobar_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/vuelos": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "summary": "Busca vuelos de ida",
+        "operationId": "vuelos",
+        "parameters": [
+          {
+            "name": "origen",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "pax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/tipo-cambio": {
+      "get": {
+        "tags": [
+          "Tipo de cambio"
+        ],
+        "summary": "Cotizaciones en cache (moneda -> USD)",
+        "operationId": "vigentes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/Cotizacion"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/tipo-cambio/{moneda}": {
+      "get": {
+        "tags": [
+          "Tipo de cambio"
+        ],
+        "summary": "Cotizacion de una moneda a USD (consulta la API si no esta en cache)",
+        "operationId": "cotizacion",
+        "parameters": [
+          {
+            "name": "moneda",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cotizacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/ofertas": {
+      "get": {
+        "tags": [
+          "Ofertas"
+        ],
+        "summary": "Verifica una oferta: precio en USD, disponibilidad y vigencia (409 si no se puede reservar)",
+        "operationId": "verificar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfertaVerificada"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/ofertas/bloqueadas": {
+      "get": {
+        "tags": [
+          "Ofertas"
+        ],
+        "summary": "Ofertas bloqueadas por la IA (precio anomalo)",
+        "operationId": "bloqueadas",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OfertaPublicada"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/hoteles": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "summary": "Busca hoteles (precio por noche)",
+        "operationId": "hoteles",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "checkin",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "checkout",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "pax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/excursiones": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "summary": "Busca excursiones (precio por persona)",
+        "operationId": "excursiones",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/buscar": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "summary": "Busca todo lo necesario para armar un paquete",
+        "operationId": "buscar",
+        "parameters": [
+          {
+            "name": "origen",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "pax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusquedaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/autos/disponibles": {
+      "get": {
+        "tags": [
+          "Busqueda"
+        ],
+        "summary": "Autos propios disponibles en el destino para esas fechas",
+        "operationId": "autosDisponibles",
+        "parameters": [
+          {
+            "name": "destino",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AutoRequest": {
+        "required": [
+          "categoria",
+          "destinoIata",
+          "marca",
+          "modelo",
+          "moneda",
+          "plazas",
+          "precioBaseDia"
+        ],
+        "type": "object",
+        "properties": {
+          "destinoIata": {
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "ECONOMICO",
+              "COMPACTO",
+              "SUV",
+              "PICKUP",
+              "PREMIUM"
+            ]
+          },
+          "marca": {
+            "type": "string"
+          },
+          "modelo": {
+            "type": "string"
+          },
+          "plazas": {
+            "maximum": 9,
+            "minimum": 2,
+            "type": "integer",
+            "format": "int32"
+          },
+          "transmisionAutomatica": {
+            "type": "boolean"
+          },
+          "precioBaseDia": {
+            "minimum": 0.01,
+            "exclusiveMinimum": false,
+            "type": "number"
+          },
+          "moneda": {
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          }
+        }
+      },
+      "AutoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "destinoIata": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "ECONOMICO",
+              "COMPACTO",
+              "SUV",
+              "PICKUP",
+              "PREMIUM"
+            ]
+          },
+          "marca": {
+            "type": "string"
+          },
+          "modelo": {
+            "type": "string"
+          },
+          "plazas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "transmisionAutomatica": {
+            "type": "boolean"
+          },
+          "precioBaseDia": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "enRevision": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReservaProveedorRequest": {
+        "required": [
+          "desde",
+          "hasta",
+          "pasajeros",
+          "productoId",
+          "reservaRef",
+          "tipo",
+          "titular"
+        ],
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "productoId": {
+            "type": "string"
+          },
+          "desde": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date"
+          },
+          "pasajeros": {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "reservaRef": {
+            "type": "string"
+          },
+          "titular": {
+            "$ref": "#/components/schemas/Titular"
+          }
+        }
+      },
+      "Titular": {
+        "required": [
+          "apellido",
+          "email",
+          "fechaNacimiento",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fechaNacimiento": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "ReservaProveedorResponse": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "productoId": {
+            "type": "string"
+          },
+          "refExterna": {
+            "type": "string"
+          }
+        }
+      },
+      "OfertaPublicada": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "proveedor": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "destino": {
+            "type": "string"
+          },
+          "precio": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "ocupacion": {
+            "type": "number",
+            "format": "double"
+          },
+          "bloqueada": {
+            "type": "boolean"
+          },
+          "motivoBloqueo": {
+            "type": "string"
+          },
+          "actualizadaEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiraEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProductoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "proveedor": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "destino": {
+            "type": "string"
+          },
+          "precioBase": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "ocupacion": {
+            "type": "number",
+            "format": "double"
+          },
+          "detalle": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Cotizacion": {
+        "type": "object",
+        "properties": {
+          "moneda": {
+            "type": "string"
+          },
+          "usdPorUnidad": {
+            "type": "number"
+          },
+          "fuente": {
+            "type": "string"
+          },
+          "obtenida": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OfertaVerificada": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VUELO",
+              "HOTEL",
+              "EXCURSION",
+              "AUTO"
+            ]
+          },
+          "proveedor": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "destino": {
+            "type": "string"
+          },
+          "precio": {
+            "type": "number"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "ocupacion": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "BusquedaResponse": {
+        "type": "object",
+        "properties": {
+          "vuelos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoResponse"
+            }
+          },
+          "hoteles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoResponse"
+            }
+          },
+          "excursiones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoResponse"
+            }
+          },
+          "autos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoResponse"
+            }
+          }
+        }
+      }
+    }
+  }
+}

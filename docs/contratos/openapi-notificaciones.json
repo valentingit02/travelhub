@@ -1,0 +1,121 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8085",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Notificaciones",
+      "description": "Diagnostico de mails"
+    }
+  ],
+  "paths": {
+    "/api/notificaciones/prueba": {
+      "post": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "Manda un mail de prueba en el momento",
+        "operationId": "prueba",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notificaciones": {
+      "get": {
+        "tags": [
+          "Notificaciones"
+        ],
+        "summary": "A donde se mandan los mails y los ultimos 50 envios (OK o ERROR)",
+        "operationId": "estado",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estado"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Envio": {
+        "type": "object",
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "para": {
+            "type": "string"
+          },
+          "asunto": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Estado": {
+        "type": "object",
+        "properties": {
+          "servidor": {
+            "type": "string"
+          },
+          "modo": {
+            "type": "string"
+          },
+          "envios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Envio"
+            }
+          }
+        }
+      }
+    }
+  }
+}
