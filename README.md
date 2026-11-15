@@ -79,6 +79,7 @@ Exchange `travelhub.events` (topic). Cada consumidor tiene su propia cola durabl
 - **Login** con email y contrasena (`POST /api/auth/registro`, `/login`, `/activar`). Las contrasenas se guardan con BCrypt.
 - **Sesion** con JWT (HS256) en el header `Authorization: Bearer`. Clave en `JWT_SECRET` (minimo 32 caracteres).
 - **Privacidad**: cada viajero solo ve y opera sus reservas, creditos, alertas y perfil (401 sin sesion, 403 si pide datos ajenos).
+- **Rol ADMIN**: cambiar precios, dar de alta o baja autos y aprobar lo que bloqueo la IA exige un token con rol ADMIN (emails en `ADMIN_EMAILS`). El catalogo valida el mismo JWT. Detalle: [docs/PR_ADMIN.md](docs/PR_ADMIN.md).
 - Buscar, cotizar, el asistente y el link de viaje compartido siguen siendo publicos. Detalle: [docs/PR_LOGIN.md](docs/PR_LOGIN.md).
 
 ## Patrones
@@ -92,11 +93,11 @@ Detalle y resultados: [docs/06_PRUEBAS.md](docs/06_PRUEBAS.md).
 | Tipo | Donde |
 |---|---|
 | Unitarias | `EstrategiasPrecioTest`, `ProductoFactoryTest`, `ReservaSagaTest`, `OfertaServiceTest`, `TokenServiceTest`, `AuthServiceTest`, ... |
-| Seguridad (HTTP) | `SeguridadWebTest` (401 sin sesion, 403 con datos ajenos, rutas publicas) |
+| Seguridad (HTTP) | `SeguridadWebTest` (401 sin sesion, 403 con datos ajenos, rutas publicas), `SeguridadCatalogoWebTest` (rol ADMIN) |
 | Integracion | `PagoIntegracionTest` (Testcontainers: RabbitMQ + Postgres), `AutoRepositoryTest` |
 | Local vs remota | `InvocacionLocalVsRemotaTest` (llamada directa vs REST vs SOAP, con tiempos) |
 | IA | `ia-service/tests` (25 tests), `evaluar_modelo.py` (matriz de confusion, recall, latencia) |
-| De punta a punta | `python tests/e2e/prueba_funcional.py` (45 chequeos contra el sistema levantado) |
+| De punta a punta | `python tests/e2e/prueba_funcional.py` (53 chequeos contra el sistema levantado) |
 | Manuales | `tests/http/demo.http`, `tests/soap/*.xml` |
 | Carga | `tests/k6/busqueda.js` (50 usuarios, p95 < 500 ms) |
 

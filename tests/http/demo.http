@@ -83,15 +83,38 @@ Content-Type: application/json
 GET {{gw}}/api/reservas
 Authorization: Bearer {{token}}
 
-### 7. Demo IA: cargar un auto a 1 USD -> la IA lo marca y el catalogo lo pone EN REVISION
-PUT http://localhost:8081/api/catalogo/autos/2
+### 7a. Ingresar como operador (su email esta en ADMIN_EMAILS; la primera vez, crear la cuenta con /api/auth/registro)
+# @name admin
+POST {{gw}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@travelhub.local", "password": "admin-demo-123" }
+
+###
+@tokenAdmin = {{admin.response.body.token}}
+
+### 7b. Un viajero comun NO puede cambiar precios -> 403
+PUT {{gw}}/api/catalogo/autos/2
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "destinoIata": "BRC", "categoria": "SUV", "marca": "Toyota", "modelo": "SW4", "plazas": 7,
+  "transmisionAutomatica": true, "precioBaseDia": 1, "moneda": "USD" }
+
+### 7. Demo IA: el operador carga un auto a 1 USD -> la IA lo marca y el catalogo lo pone EN REVISION
+PUT {{gw}}/api/catalogo/autos/2
+Authorization: Bearer {{tokenAdmin}}
 Content-Type: application/json
 
 { "destinoIata": "BRC", "categoria": "SUV", "marca": "Toyota", "modelo": "SW4", "plazas": 7,
   "transmisionAutomatica": true, "precioBaseDia": 1, "moneda": "USD" }
 
 ### 8. Verificar (el auto 2 deberia tener enRevision=true)
-GET http://localhost:8081/api/catalogo/autos/2
+GET {{gw}}/api/catalogo/autos/2
+
+### 8b. El operador lo aprueba y vuelve a publicarse
+POST {{gw}}/api/catalogo/autos/2/aprobar
+Authorization: Bearer {{tokenAdmin}}
 
 ### 9. Recomendaciones de la IA
 GET {{gw}}/api/ia/recomendaciones?destino=BRC&desde=2027-07-10&hasta=2027-07-15&preferencias=aventura

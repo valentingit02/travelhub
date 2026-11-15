@@ -9,7 +9,7 @@
    y a los 2 segundos queda CONFIRMADA sola.
 5. En Mis viajes, "Ver kit de viaje": mapa de excursiones (OpenStreetMap). Tocar un dia del itinerario y ver como el mapa se acerca.
 6. Abrir Mailpit y mostrar el mail con el resumen de la IA (y quien lo genero: LLM o plantilla).
-7. Anomalia: `PUT` del auto 2 a 1 USD (`tests/http/demo.http`, paso 7). La IA publica `anomalia.detectada` y el auto queda en revision.
+7. Anomalia: ingresar como operador (`admin@travelhub.local`, paso 7a de `tests/http/demo.http`). Mostrar que un viajero recibe 403 (7b) y que el operador pone el auto 2 a 1 USD (paso 7). La IA publica `anomalia.detectada` y el auto queda en revision.
 8. Saga: reservar con "Hotel Falla (demo de Saga)". Mostrar la bitacora: vuelo OK -> hotel FALLO -> COMPENSAR_VUELO OK, y el mail de reserva fallida.
 9. Resiliencia: `docker compose stop notificaciones`, reservar, mostrar el mensaje esperando en la cola,
    `docker compose start notificaciones` y ver que llega el mail.

@@ -18,6 +18,8 @@ probar desde Swagger UI.
 - Errores con un formato único (`ApiError`): `status`, `error`, `mensaje`, `correlationId`, `timestamp`, `detalles`.
   400 datos inválidos · 401 sin sesión · 403 recurso ajeno · 404 no existe · 409 conflicto (ej. oferta vencida) · 502 falla de un proveedor.
 - Las rutas de reservas, créditos, seguimientos y perfil piden `Authorization: Bearer <JWT>` (ver [PR_LOGIN.md](PR_LOGIN.md)).
+- Las operaciones de operador del catálogo (alta, cambio y baja de autos; aprobar o listar ofertas bloqueadas) piden un JWT con rol ADMIN (ver [PR_ADMIN.md](PR_ADMIN.md)). 401 sin token, 403 sin el rol.
+- `/api/catalogo/reservas-proveedor` es interno: el gateway lo bloquea y solo lo llama `reservas` por la red de Docker.
 - `POST /api/reservas` acepta `Idempotency-Key`.
 
 ## 4.2 Contrato SOAP
@@ -168,7 +170,8 @@ sequenceDiagram
     participant MQ as RabbitMQ
     participant IA as ia
     participant DB as ia_db
-    O->>C: PUT /api/catalogo/autos/2 (precio 1 USD)
+    O->>C: PUT /api/catalogo/autos/2 (precio 1 USD, JWT con rol ADMIN)
+    C->>C: validar token y rol
     C->>MQ: precio.cambiado (precio anterior y nuevo)
     MQ->>IA: ia.precio-cambiado
     IA->>IA: 1) variación vs precio anterior<br/>2) Isolation Forest + z-score por destino<br/>3) distribución de referencia

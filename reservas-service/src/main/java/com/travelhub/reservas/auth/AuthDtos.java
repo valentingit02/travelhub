@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 public final class AuthDtos {
 
@@ -24,5 +25,6 @@ public final class AuthDtos {
     public record ActivarRequest(@NotBlank @Email String email, @NotBlank String documento,
                                  @NotBlank @Size(min = 8, max = 72) String password) { }
 
-    public record SesionResponse(String token, Instant expiraEn, ViajeroDtos.Response viajero) { }
+    /** roles: ["ADMIN"] para operadores, [] para el resto (el mismo dato va dentro del token). */
+    public record SesionResponse(String token, Instant expiraEn, List<String> roles, ViajeroDtos.Response viajero) { }
 }

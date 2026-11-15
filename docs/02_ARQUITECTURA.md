@@ -9,7 +9,7 @@ Un **gateway** (nginx) es el único punto de entrada para el navegador.
 | Servicio | Tecnología | Responsabilidad | Base | Puerto |
 |---|---|---|---|---|
 | gateway | nginx + React (Vite) | Sirve el frontend y enruta `/api/*` y `/ws` | — | 8080 |
-| catalogo-service | Spring Boot 3.3 | Búsqueda en proveedores (Adapter), ofertas verificables, autos propios, tipo de cambio | `catalogo_db` + Redis | 8081 |
+| catalogo-service | Spring Boot 3.3 + Spring Security | Búsqueda en proveedores (Adapter), ofertas verificables, autos propios, tipo de cambio. Operaciones de operador con rol ADMIN | `catalogo_db` + Redis | 8081 |
 | precios-service | Spring Boot 3.3 + Spring WS | Cotización dinámica (Strategy) y de paquetes (Composite). **REST y SOAP** | `precios_db` | 8082 |
 | reservas-service | Spring Boot 3.3 + Spring Security | Viajeros y login, reservas (Facade), **Saga**, viaje compartido, créditos, alertas, Outbox | `reservas_db` | 8083 |
 | pagos-service | Spring Boot 3.3 | Cobros y reembolsos asincrónicos (Strategy de procesador) | `pagos_db` | 8084 |
@@ -21,7 +21,7 @@ Un **gateway** (nginx) es el único punto de entrada para el navegador.
 ```mermaid
 flowchart LR
     U([Navegador]) -->|HTTP| GW[gateway<br/>nginx + React]
-    GW -->|REST| CAT[catalogo-service]
+    GW -->|REST + JWT ADMIN| CAT[catalogo-service]
     GW -->|REST| PRE[precios-service]
     GW -->|SOAP /ws| PRE
     GW -->|REST + JWT| RES[reservas-service]
@@ -258,9 +258,9 @@ flowchart TB
 
 | Forma | Cómo | Tiempo promedio |
 |---|---|---|
-| Local | Llamada directa a `CotizadorService` en la misma JVM | 0,13 ms |
-| Remota REST/JSON | `POST /api/precios/cotizar` por HTTP | 17,6 ms |
-| Remota SOAP/XML | `CotizarProducto` en `/ws` por HTTP | 18,7 ms |
+| Local | Llamada directa a `CotizadorService` en la misma JVM | 0,17 ms |
+| Remota REST/JSON | `POST /api/precios/cotizar` por HTTP | 15,8 ms |
+| Remota SOAP/XML | `CotizarProducto` en `/ws` por HTTP | 17,1 ms |
 
 El resultado es idéntico en los tres casos (el test lo verifica). La invocación remota cuesta dos órdenes de magnitud
 más (serialización, red, HTTP), pero permite desplegar, escalar y versionar cada componente por separado. Por eso
@@ -278,4 +278,5 @@ dentro de un servicio se usa invocación directa y entre servicios, interfaces r
 | Gateway nginx | Spring Cloud Gateway | Más liviano; además sirve el frontend |
 | IA en Python | IA en Java | scikit-learn y el ecosistema de ML; se integra igual por REST y por la cola |
 | LLM local (Ollama) opcional | API de OpenAI | Privacidad (ningún dato sale del equipo) y costo cero; con plantilla de respaldo |
-| JWT HS256 emitido por reservas | Keycloak | Un solo emisor y validador; menos piezas para el laboratorio |
+| JWT HS256 emitido por reservas | Keycloak | Un solo emisor; el catálogo solo valida con la misma clave. Menos piezas para el laboratorio |
+| Rol ADMIN por configuración (`ADMIN_EMAILS`) | Columna de rol en la base | Nadie puede darse permisos con un request y no hace falta una pantalla de gestión de roles |

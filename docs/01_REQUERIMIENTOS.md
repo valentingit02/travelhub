@@ -9,7 +9,7 @@ Una capa de IA detecta precios anómalos, resume el viaje, recomienda excursione
 |---|---|
 | Viajero | Busca, arma el paquete, reserva, paga y consulta sus viajes. Necesita cuenta para reservar |
 | Invitado | Amigo de un viaje compartido: paga su parte con un link, sin cuenta |
-| Operador | Revisa productos marcados por la IA y los aprueba (Swagger del catálogo) |
+| Operador (rol ADMIN) | Cambia precios e inventario y aprueba los productos que marcó la IA (Swagger del catálogo, con su token) |
 | Proveedores externos | Duffel (vuelos), Hotelbeds (hoteles y excursiones), Frankfurter (tipo de cambio), Open-Meteo (clima), Open Library (libros), OpenStreetMap (mapas) |
 
 ## 1.2 Requerimientos funcionales
@@ -37,12 +37,12 @@ Una capa de IA detecta precios anómalos, resume el viaje, recomienda excursione
 ## 1.3 Requerimientos no funcionales
 | ID | Atributo | Requerimiento | Cómo se verifica | Resultado medido |
 |---|---|---|---|---|
-| RNF01 | Rendimiento | Búsqueda con 50 usuarios simultáneos: p95 < 500 ms, errores < 1 % | `tests/k6/busqueda.js` | p95 = 115 ms recién arrancado y 50 ms en caliente; 0 % errores (3.631 requests) |
+| RNF01 | Rendimiento | Búsqueda con 50 usuarios simultáneos: p95 < 500 ms, errores < 1 % | `tests/k6/busqueda.js` | p95 entre 115 y 406 ms recién arrancado (según la corrida) y 60 ms en caliente; 0 % errores |
 | RNF02 | Disponibilidad | Si un proveedor externo falla, el resto del sistema sigue funcionando | Circuit breaker (Resilience4j) en catálogo, precios y tipo de cambio | Estado en `/actuator/circuitbreakers` |
 | RNF03 | Confiabilidad | Ningún evento se pierde si RabbitMQ está caído; los mensajes que fallan no se descartan | Outbox + 3 reintentos + DLQ | `OutboxRelayTest`, cola `travelhub.dlq` |
 | RNF04 | Consistencia | Una reserva nunca queda a medias entre proveedores | Saga con compensación | `ReservaSagaTest`, prueba funcional "Hotel Falla" |
 | RNF05 | Idempotencia | Reintentar una compra o un pago no cobra dos veces | Header `Idempotency-Key`; pagos no cobra dos veces la misma parte | Prueba funcional: dos POST con la misma clave devuelven la misma reserva y generan un solo pago |
-| RNF06 | Seguridad | Contraseñas con BCrypt; sesión con JWT firmado; cada viajero solo accede a sus datos | Spring Security | `SeguridadWebTest`, `AuthServiceTest`, `TokenServiceTest` |
+| RNF06 | Seguridad | Contraseñas con BCrypt; sesión con JWT firmado; cada viajero solo accede a sus datos; solo un operador (rol ADMIN) cambia precios o aprueba productos | Spring Security en reservas y catálogo | `SeguridadWebTest`, `SeguridadCatalogoWebTest`, `AuthServiceTest`, `TokenServiceTest` |
 | RNF07 | Observabilidad | Cada request se puede seguir entre servicios | `X-Correlation-Id` en logs + trazas en Zipkin | http://localhost:9411 |
 | RNF08 | Mantenibilidad | Esquema versionado; configuración fuera del código | Flyway; variables de entorno (`.env`) | `db/migration/V*.sql`, `.env.example` |
 | RNF09 | Portabilidad | Todo corre en un entorno de laboratorio con un solo comando | Docker Compose | `docker compose up -d --build` |
