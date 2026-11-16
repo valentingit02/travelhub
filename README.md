@@ -96,7 +96,7 @@ Detalle y resultados: [docs/06_PRUEBAS.md](docs/06_PRUEBAS.md).
 | Seguridad (HTTP) | `SeguridadWebTest` (401 sin sesion, 403 con datos ajenos, rutas publicas), `SeguridadCatalogoWebTest` (rol ADMIN) |
 | Integracion | `PagoIntegracionTest` (Testcontainers: RabbitMQ + Postgres), `AutoRepositoryTest` |
 | Local vs remota | `InvocacionLocalVsRemotaTest` (llamada directa vs REST vs SOAP, con tiempos) |
-| IA | `ia-service/tests` (25 tests), `evaluar_modelo.py` (matriz de confusion, recall, latencia) |
+| IA | `ia-service/tests` (26 tests), `evaluar_modelo.py` (matriz de confusion, recall, latencia) |
 | De punta a punta | `python tests/e2e/prueba_funcional.py` (53 chequeos contra el sistema levantado) |
 | Manuales | `tests/http/demo.http`, `tests/soap/*.xml` |
 | Carga | `tests/k6/busqueda.js` (50 usuarios, p95 < 500 ms) |

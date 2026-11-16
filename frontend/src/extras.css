@@ -139,6 +139,8 @@
 .pin.activo { background: var(--acento); color: var(--tinta); transform: scale(1.25); }
 .pin-otra { background: #fff; color: var(--tinta); border-color: var(--tinta); }
 .pin-base { background: var(--cobalto); font-size: 15px; }
+.pin-aero { background: var(--acento); color: var(--tinta); font-size: 14px; }
+.pin-aero.activo { background: var(--tinta); color: var(--acento); }
 .pin.mini { width: 20px; height: 20px; font-size: 10px; border-width: 1px; box-shadow: none; }
 .pin-base.mini { font-size: 11px; }
 .leaflet-container { font-family: var(--sans); }

@@ -4,7 +4,8 @@
 En **Mis viajes → Ver kit de viaje** aparece un mapa con las excursiones del itinerario:
 - **Pin numerado**: la excursión de ese día. Al tocar un día del itinerario, el mapa se acerca y abre su ficha.
 - **Pin "+"**: excursiones recomendadas por la IA que no entraron en los días del viaje.
-- **Casita**: el destino (llegada, alojamiento y regreso).
+- **Casita**: el centro de la ciudad.
+- **Avión**: el aeropuerto del destino, con nombre y dirección. Los días de llegada y regreso del itinerario apuntan a este pin, que además tiene el link "Del aeropuerto al centro" en Google Maps.
 - Cada ficha tiene un link **"Cómo llegar"** que abre Google Maps con la ruta (sin API key).
 
 ## Cambios

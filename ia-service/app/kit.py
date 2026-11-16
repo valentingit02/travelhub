@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from . import libros, recomendaciones
 from .clima import clima as consultar_clima
-from .config import DESTINOS
+from .config import AEROPUERTOS, DESTINOS
 
 
 def equipaje(destino: str, c: Optional[dict], noches: int, preferencias: List[str]) -> List[dict]:
@@ -46,25 +46,40 @@ def equipaje(destino: str, c: Optional[dict], noches: int, preferencias: List[st
     return unicos
 
 
+def aeropuerto(destino: str) -> Optional[dict]:
+    """Aeropuerto del destino para el mapa: nombre, direccion y coordenadas (None si no esta cargado)."""
+    a = AEROPUERTOS.get(destino.upper())
+    if not a:
+        return None
+    nombre, direccion, lat, lon = a
+    return {"nombre": nombre, "direccion": direccion, "lat": lat, "lon": lon}
+
+
 def itinerario(destino: str, desde: date, hasta: date, recos: List[dict]) -> List[dict]:
     dias = max(1, (hasta - desde).days) + 1
     ciudad = DESTINOS.get(destino.upper(), (destino,))[0]
+    aero = aeropuerto(destino)
+    en_aeropuerto = {"tipo": "aeropuerto", "lat": aero["lat"], "lon": aero["lon"]} if aero else {}
     plan = []
     actividades = list(recos)
     for n in range(dias):
         f = desde + timedelta(days=n)
+        ubicacion = {}
         if n == 0:
             titulo, detalle = f"Llegada a {ciudad}", "Check-in, recorrida tranquila y cena"
+            ubicacion = en_aeropuerto
         elif n == dias - 1:
             titulo, detalle = "Regreso", "Check-out y traslado al aeropuerto"
+            ubicacion = en_aeropuerto
         elif actividades:
             a = actividades.pop(0)
             titulo, detalle = a["nombre"], f"{a['categoria'].capitalize()} · {a['motivo']}"
+            exc = recomendaciones.ubicacion(titulo)
+            ubicacion = {"tipo": "excursion", **exc} if exc else {}
         else:
             titulo, detalle = "Día libre", "Descanso o repetir lo que más te gustó"
-        # Los dias con excursion llevan su ubicacion (lat/lon) para el mapa
-        plan.append({"dia": n + 1, "fecha": f.isoformat(), "titulo": titulo, "detalle": detalle,
-                     **recomendaciones.ubicacion(titulo)})
+        # Los dias con lugar (aeropuerto o excursion) llevan lat/lon para el mapa
+        plan.append({"dia": n + 1, "fecha": f.isoformat(), "titulo": titulo, "detalle": detalle, **ubicacion})
     return plan
 
 
@@ -77,7 +92,8 @@ def mapa(destino: str, recos: List[dict], plan: List[dict]) -> Optional[dict]:
     en_plan = {p["titulo"] for p in plan}
     extras = [{"nombre": r["nombre"], "categoria": r["categoria"], "lat": r["lat"], "lon": r["lon"]}
               for r in recos if "lat" in r and r["nombre"] not in en_plan]
-    return {"ciudad": ciudad, "centro": {"lat": lat, "lon": lon}, "otrasExcursiones": extras}
+    return {"ciudad": ciudad, "centro": {"lat": lat, "lon": lon}, "aeropuerto": aeropuerto(d),
+            "otrasExcursiones": extras}
 
 
 def generar(destino: str, desde: date, hasta: date, pax: int = 2, preferencias: Optional[List[str]] = None) -> dict:

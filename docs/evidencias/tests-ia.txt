@@ -4,33 +4,34 @@ rootdir: /src
 configfile: pytest.ini
 testpaths: tests
 plugins: anyio-4.15.1
-collecting ... collected 25 items
+collecting ... collected 26 items
 
-tests/test_asistente.py::test_nieve_en_julio_con_mi_novia PASSED         [  4%]
-tests/test_asistente.py::test_fechas_explicitas_y_amigos PASSED          [  8%]
-tests/test_asistente.py::test_fin_de_semana_y_presupuesto PASSED         [ 12%]
-tests/test_asistente.py::test_playa_no_esta_disponible PASSED            [ 16%]
-tests/test_asistente.py::test_contexto_se_combina PASSED                 [ 20%]
-tests/test_asistente.py::test_pide_destino_si_falta PASSED               [ 24%]
-tests/test_asistente.py::test_arma_paquete_con_servicios PASSED          [ 28%]
-tests/test_asistente.py::test_si_el_catalogo_falla_no_se_cae PASSED      [ 32%]
-tests/test_asistente.py::test_kit_de_viaje_con_frio_y_lluvia PASSED      [ 36%]
-tests/test_asistente.py::test_libros_usan_respaldo_si_open_library_no_responde PASSED [ 40%]
-tests/test_ia.py::test_cumple_rnf_en_los_tres_escenarios PASSED          [ 44%]
-tests/test_ia.py::test_auto_a_un_dolar_es_anomalia PASSED                [ 48%]
-tests/test_ia.py::test_vuelo_caro_a_madrid_sin_historial_no_se_bloquea PASSED [ 52%]
-tests/test_ia.py::test_variacion_brusca_respecto_del_anterior PASSED     [ 56%]
-tests/test_ia.py::test_reentrena_con_historial_por_destino PASSED        [ 60%]
-tests/test_ia.py::test_endpoint_evaluar PASSED                           [ 64%]
-tests/test_ia.py::test_endpoint_modelo PASSED                            [ 68%]
-tests/test_ia.py::test_consumidor_publica_solo_si_hay_anomalia PASSED    [ 72%]
-tests/test_ia.py::test_resumen_cae_a_plantilla_si_no_hay_llm PASSED      [ 76%]
-tests/test_ia.py::test_prompt_no_incluye_datos_sensibles PASSED          [ 80%]
-tests/test_ia.py::test_con_lluvia_prioriza_bajo_techo PASSED             [ 84%]
-tests/test_mapa.py::test_todas_las_excursiones_tienen_ubicacion_cerca_de_su_destino PASSED [ 88%]
-tests/test_mapa.py::test_el_kit_trae_ubicacion_en_los_dias_con_excursion PASSED [ 92%]
-tests/test_mapa.py::test_el_mapa_tiene_centro_y_no_repite_excursiones_del_itinerario PASSED [ 96%]
-tests/test_mapa.py::test_destino_sin_coordenadas_no_rompe_el_kit PASSED  [100%]
+tests/test_asistente.py::test_nieve_en_julio_con_mi_novia PASSED         [  3%]
+tests/test_asistente.py::test_fechas_explicitas_y_amigos PASSED          [  7%]
+tests/test_asistente.py::test_fin_de_semana_y_presupuesto PASSED         [ 11%]
+tests/test_asistente.py::test_playa_no_esta_disponible PASSED            [ 15%]
+tests/test_asistente.py::test_contexto_se_combina PASSED                 [ 19%]
+tests/test_asistente.py::test_pide_destino_si_falta PASSED               [ 23%]
+tests/test_asistente.py::test_arma_paquete_con_servicios PASSED          [ 26%]
+tests/test_asistente.py::test_si_el_catalogo_falla_no_se_cae PASSED      [ 30%]
+tests/test_asistente.py::test_kit_de_viaje_con_frio_y_lluvia PASSED      [ 34%]
+tests/test_asistente.py::test_libros_usan_respaldo_si_open_library_no_responde PASSED [ 38%]
+tests/test_ia.py::test_cumple_rnf_en_los_tres_escenarios PASSED          [ 42%]
+tests/test_ia.py::test_auto_a_un_dolar_es_anomalia PASSED                [ 46%]
+tests/test_ia.py::test_vuelo_caro_a_madrid_sin_historial_no_se_bloquea PASSED [ 50%]
+tests/test_ia.py::test_variacion_brusca_respecto_del_anterior PASSED     [ 53%]
+tests/test_ia.py::test_reentrena_con_historial_por_destino PASSED        [ 57%]
+tests/test_ia.py::test_endpoint_evaluar PASSED                           [ 61%]
+tests/test_ia.py::test_endpoint_modelo PASSED                            [ 65%]
+tests/test_ia.py::test_consumidor_publica_solo_si_hay_anomalia PASSED    [ 69%]
+tests/test_ia.py::test_resumen_cae_a_plantilla_si_no_hay_llm PASSED      [ 73%]
+tests/test_ia.py::test_prompt_no_incluye_datos_sensibles PASSED          [ 76%]
+tests/test_ia.py::test_con_lluvia_prioriza_bajo_techo PASSED             [ 80%]
+tests/test_mapa.py::test_todas_las_excursiones_tienen_ubicacion_cerca_de_su_destino PASSED [ 84%]
+tests/test_mapa.py::test_el_kit_trae_ubicacion_en_los_dias_con_excursion PASSED [ 88%]
+tests/test_mapa.py::test_el_mapa_tiene_centro_y_no_repite_excursiones_del_itinerario PASSED [ 92%]
+tests/test_mapa.py::test_destino_sin_coordenadas_no_rompe_el_kit PASSED  [ 96%]
+tests/test_mapa.py::test_cada_destino_tiene_su_aeropuerto_cerca PASSED   [100%]
 
 =============================== warnings summary ===============================
 ../usr/local/lib/python3.12/site-packages/fastapi/testclient.py:1
@@ -38,4 +39,4 @@ tests/test_mapa.py::test_destino_sin_coordenadas_no_rompe_el_kit PASSED  [100%]
     from starlette.testclient import TestClient as TestClient  # noqa
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-=================== 25 passed, 1 warning in 63.61s (0:01:03) ===================
+=================== 26 passed, 1 warning in 62.42s (0:01:02) ===================
