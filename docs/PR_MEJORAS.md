@@ -1,8 +1,8 @@
 # PR: Precio verificado por el servidor, Outbox, resiliencia, observabilidad, IA v2 y rediseño
 
 ## Por qué
-Cerrar tres problemas de consistencia que aparecerían en la defensa y sumar las mejoras
-de arquitectura del plan (secciones 11 a 13).
+Cerrar tres problemas de consistencia del flujo de reserva y sumar mejoras
+de arquitectura: resiliencia, observabilidad y una nueva versión del componente de IA.
 
 ## Cambios
 
