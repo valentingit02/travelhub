@@ -66,16 +66,3 @@ Medido en una notebook con Docker Desktop y 3,8 GB de memoria para los 12 conten
 ## 6.5 Validación del componente de IA
 Ver [05_IA.md](05_IA.md#51-detección-de-anomalías-de-precio). Resumen: recall 1,00 en los tres escenarios (meta ≥ 0,85),
 precisión entre 0,90 y 1,00, latencia p95 entre 36 y 112 ms según la carga del equipo (meta < 200 ms). La validación corre en CI en cada PR.
-
-## 6.6 Capturas para el informe
-Estas evidencias son visuales y conviene sacarlas con el sistema levantado (no se pueden generar desde la consola):
-
-| Captura | Dónde |
-|---|---|
-| Swagger de reservas con el botón Authorize | http://localhost:8083/swagger-ui.html |
-| Llamada SOAP con su respuesta | SoapUI o Postman con `tests/soap/cotizar-paquete.xml` |
-| Exchange, colas y DLQ | http://localhost:15672 (guest / guest) |
-| Traza de una reserva atravesando varios servicios | http://localhost:9411 |
-| Mail de confirmación con el resumen de la IA | http://localhost:8025 |
-| Mis viajes con la bitácora de la Saga y el kit con el mapa | http://localhost:8080 |
-| Salida de k6 y de `evaluar_modelo.py` | Consola |
