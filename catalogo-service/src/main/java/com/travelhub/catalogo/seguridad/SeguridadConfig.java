@@ -83,10 +83,10 @@ public class SeguridadConfig {
     SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper mapper) throws Exception {
         AuthenticationEntryPoint sinSesion = (req, res, ex) -> escribir(res, mapper, HttpStatus.UNAUTHORIZED,
                 ex instanceof OAuth2AuthenticationException
-                        ? "Tu sesion vencio o no es valida. Ingresa de nuevo."
-                        : "Esta operacion es solo para operadores: ingresa con una cuenta ADMIN.");
+                        ? "Tu sesión venció o no es válida. Ingresá de nuevo."
+                        : "Esta operación es solo para operadores: ingresá con una cuenta ADMIN.");
         AccessDeniedHandler denegado = (req, res, ex) ->
-                escribir(res, mapper, HttpStatus.FORBIDDEN, "Esta operacion requiere el rol ADMIN.");
+                escribir(res, mapper, HttpStatus.FORBIDDEN, "Esta operación requiere el rol ADMIN.");
 
         http.csrf(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)

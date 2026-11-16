@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> jsonInvalido(HttpMessageNotReadableException ex) {
-        return build(HttpStatus.BAD_REQUEST, "El cuerpo del request no es un JSON valido", List.of());
+        return build(HttpStatus.BAD_REQUEST, "El cuerpo del request no es un JSON válido", List.of());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

@@ -10,5 +10,5 @@ public class Excursion extends ProductoTuristico {
     public TipoProducto getTipo() { return TipoProducto.EXCURSION; }
 
     @Override
-    public String descripcion() { return "Excursion en " + getDestino(); }
+    public String descripcion() { return "Excursión en " + getDestino(); }
 }

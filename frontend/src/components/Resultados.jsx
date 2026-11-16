@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import SearchBox from './SearchBox.jsx'
-import { DESTINOS, DETALLE_OCULTO, TIPOS, ciudad, dinero, estimado, fecha, noches, unidades } from '../data.js'
+import { DESTINOS, DETALLE_OCULTO, TIPOS, ciudad, dinero, estimado, fecha, noches, texto, unidades, valorDetalle } from '../data.js'
 
 const TAB_POR_FOCO = { PAQUETE: 'vuelos', VUELO: 'vuelos', HOTEL: 'hoteles', AUTO: 'autos', EXCURSION: 'excursiones' }
 const ORDEN_TABS = ['vuelos', 'hoteles', 'autos', 'excursiones']
@@ -151,7 +151,7 @@ function Tarjeta({ p, busqueda, elegido, alternar }) {
         <div className="card-proveedor">{p.proveedor === 'MOCK' ? 'Simulado' : p.proveedor}</div>
         <h3>{p.nombre}</h3>
         <div className="chips">
-          {detalle.map(([k, v]) => <span key={k} className="chip"><i>{k}</i> {v}</span>)}
+          {detalle.map(([k, v]) => <span key={k} className="chip"><i>{texto(k)}</i> {valorDetalle(k, v)}</span>)}
           {p.detalle?.co2Kg && (
             <span className="chip co2" title={`Estimación para ${p.detalle.distanciaKm} km`}>≈ {p.detalle.co2Kg} kg CO₂ por persona</span>
           )}

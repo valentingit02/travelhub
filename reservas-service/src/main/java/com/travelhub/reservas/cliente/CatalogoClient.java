@@ -68,7 +68,7 @@ public class CatalogoClient {
                     .retrieve().body(Respuesta.class));
             return r.refExterna();
         } catch (RestClientResponseException e) {
-            throw new ExternalServiceException(tipo + " rechazado por el proveedor: " + Respuestas.mensaje(e));
+            throw new ExternalServiceException(Respuestas.mensaje(e));
         } catch (RestClientException e) {
             throw new ExternalServiceException("catalogo-service no disponible: " + e.getMessage(), e);
         }

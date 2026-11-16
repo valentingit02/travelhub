@@ -41,7 +41,7 @@ public class CotizacionEndpoint {
             resp.cotizacion = aSoap(cotizador.cotizar(aDominio(request.item)));
             return resp;
         } catch (IllegalArgumentException | DateTimeParseException | NullPointerException e) {
-            throw new CotizacionInvalidaException("Cotizacion invalida: " + e.getMessage());
+            throw new CotizacionInvalidaException("Cotización inválida: " + e.getMessage());
         }
     }
 
@@ -61,13 +61,13 @@ public class CotizacionEndpoint {
             return resp;
         } catch (IllegalArgumentException | DateTimeParseException | NullPointerException
                  | java.util.NoSuchElementException e) {
-            throw new CotizacionInvalidaException("Paquete invalido: " + e.getMessage());
+            throw new CotizacionInvalidaException("Paquete inválido: " + e.getMessage());
         }
     }
 
     private CotizacionRequest aDominio(SoapItem i) {
         if (i.pasajeros < 1 || i.pasajeros > 9) throw new IllegalArgumentException("pasajeros debe estar entre 1 y 9");
-        if (i.ocupacion < 0 || i.ocupacion > 1) throw new IllegalArgumentException("ocupacion debe estar entre 0 y 1");
+        if (i.ocupacion < 0 || i.ocupacion > 1) throw new IllegalArgumentException("ocupación debe estar entre 0 y 1");
         if (i.precioBase == null || i.precioBase.signum() <= 0) throw new IllegalArgumentException("precioBase debe ser positivo");
         return new CotizacionRequest(TipoProducto.valueOf(i.tipoProducto), i.precioBase, i.moneda,
                 LocalDate.parse(i.fechaInicio), LocalDate.parse(i.fechaFin), i.pasajeros, i.ocupacion);

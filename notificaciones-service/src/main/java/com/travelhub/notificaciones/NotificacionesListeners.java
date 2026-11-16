@@ -42,7 +42,7 @@ public class NotificacionesListeners {
     public void onConfirmada(ReservaConfirmadaEvent e) {
         IaClient.Resumen resumen = ia.resumir(e);
         String filas = e.items().stream().map(i -> "<tr><td style='padding:6px;border-bottom:1px solid #ebe6da'>"
-                + esc(i.tipo()) + "</td><td style='padding:6px;border-bottom:1px solid #ebe6da'>" + esc(i.descripcion())
+                + esc(tipo(i.tipo())) + "</td><td style='padding:6px;border-bottom:1px solid #ebe6da'>" + esc(i.descripcion())
                 + "</td><td style='padding:6px;border-bottom:1px solid #ebe6da;text-align:right'>" + esc(i.precio())
                 + "</td></tr>").collect(Collectors.joining());
         String cuerpo = "<p>" + esc(resumen.resumen()).replace("\n", "<br>") + "</p>"
@@ -53,7 +53,7 @@ public class NotificacionesListeners {
                 + boton("Ver mis viajes", webUrl)
                 + "<p style='color:#5f6b7d;font-size:12px'>Reserva #" + e.reservaId() + " · Resumen generado por: "
                 + esc(resumen.generadoPor()) + "</p>";
-        String asunto = "TravelHub · Tu viaje a " + e.destino() + " está confirmado (#" + e.reservaId() + ")";
+        String asunto = "TravelHub · Tu viaje a " + ciudad(e.destino()) + " está confirmado (#" + e.reservaId() + ")";
         mail.enviar("CONFIRMACION", e.email(), asunto, marco("¡Tu viaje está confirmado!", cuerpo));
         for (String acompanante : nulo(e.acompanantes())) {
             mail.enviar("CONFIRMACION", acompanante, asunto,
@@ -95,15 +95,15 @@ public class NotificacionesListeners {
     @RabbitListener(queues = NotificacionesRabbitConfig.COLA_INVITACION)
     public void onInvitacion(InvitacionViajeEvent e) {
         String link = webUrl + "/?pagar=" + e.token();
-        String cuerpo = "<p><b>" + esc(e.organizador()) + "</b> armó un viaje a <b>" + esc(e.destino()) + "</b> del "
-                + esc(e.desde()) + " al " + esc(e.hasta()) + " y te sumó.</p>"
+        String cuerpo = "<p><b>" + esc(e.organizador()) + "</b> armó un viaje a <b>" + esc(ciudad(e.destino())) + "</b> del "
+                + esc(fecha(e.desde())) + " al " + esc(fecha(e.hasta())) + " y te sumó.</p>"
                 + "<p>Tu parte: <b style='font-size:20px'>" + esc(e.monto()) + " " + esc(e.moneda()) + "</b></p>"
                 + "<p>Tenés tiempo hasta el <b>" + HORA.format(e.venceEn()) + "</b>. Si no pagan todos antes, "
                 + "la reserva se cancela y se devuelve lo pagado.</p>"
                 + boton("Pagar mi parte", link)
                 + "<p style='color:#5f6b7d;font-size:12px'>No hace falta crear una cuenta. Si el botón no funciona, "
                 + "copiá este link: " + esc(link) + "</p>";
-        mail.enviar("INVITACION", e.email(), "TravelHub · " + e.organizador() + " te invitó a viajar a " + e.destino(),
+        mail.enviar("INVITACION", e.email(), "TravelHub · " + e.organizador() + " te invitó a viajar a " + ciudad(e.destino()),
                 marco("¡Te sumaron a un viaje!", cuerpo));
     }
 
@@ -124,8 +124,8 @@ public class NotificacionesListeners {
         String cuerpo = "<p>Hola " + esc(e.nombre()) + ", <b>" + esc(e.productoRef()) + "</b> ahora cuesta <b>"
                 + esc(e.precioNuevo()) + " " + esc(e.moneda()) + "</b> (tu objetivo era " + esc(e.precioObjetivo())
                 + " " + esc(e.moneda()) + ").</p>" + boton("Ver disponibilidad", webUrl);
-        mail.enviar("ALERTA", e.email(), "TravelHub · Alerta de precio en " + e.destino(),
-                marco("¡Bajó el precio en " + e.destino() + "!", cuerpo));
+        mail.enviar("ALERTA", e.email(), "TravelHub · Alerta de precio en " + ciudad(e.destino()),
+                marco("¡Bajó el precio en " + ciudad(e.destino()) + "!", cuerpo));
     }
 
     private static List<String> nulo(List<String> l) {

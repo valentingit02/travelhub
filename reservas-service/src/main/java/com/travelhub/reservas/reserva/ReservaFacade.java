@@ -219,7 +219,7 @@ public class ReservaFacade {
 
     public CompartidaDtos.Vista vista(String token) {
         Participante p = participantes.findByToken(token)
-                .orElseThrow(() -> new NotFoundException("El link de pago no es valido"));
+                .orElseThrow(() -> new NotFoundException("El link de pago no es válido"));
         Reserva r = buscar(p.getReservaId());
         List<Participante> todos = participantes.findByReservaIdOrderByIdAsc(r.getId());
         String organizador = todos.stream().filter(Participante::isOrganizador).map(Participante::etiqueta)
@@ -233,7 +233,7 @@ public class ReservaFacade {
 
     public CompartidaDtos.Vista pagarParte(String token, String nombre) {
         Participante p = participantes.findByToken(token)
-                .orElseThrow(() -> new NotFoundException("El link de pago no es valido"));
+                .orElseThrow(() -> new NotFoundException("El link de pago no es válido"));
         Reserva r = buscar(p.getReservaId());
         if (r.getEstado() != EstadoReserva.PENDIENTE) {
             throw new ConflictException("Esta reserva ya esta " + r.getEstado().name().toLowerCase());

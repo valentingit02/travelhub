@@ -86,7 +86,7 @@ public class DuffelAdapter implements ProveedorVuelos {
             BigDecimal total = new BigDecimal(o.path("total_amount").asText("0"));
             BigDecimal porPersona = total.divide(BigDecimal.valueOf(pasajeros), 2, RoundingMode.HALF_UP);
             JsonNode seg = o.path("slices").path(0).path("segments").path(0);
-            String aerolinea = o.path("owner").path("name").asText("Aerolinea");
+            String aerolinea = o.path("owner").path("name").asText("Aerolínea");
             out.add(new OfertaProveedor(o.path("id").asText(), TipoProducto.VUELO, "DUFFEL",
                     aerolinea + " " + origen + "-" + destino, destino, porPersona,
                     o.path("total_currency").asText("USD"), "pasajeros", 0.5,
@@ -130,7 +130,10 @@ public class DuffelAdapter implements ProveedorVuelos {
             log.info("Duffel: orden {} creada para {}", orderId, reservaRef);
             return orderId;
         } catch (Exception e) {
-            throw new ExternalServiceException("Duffel rechazo la reserva del vuelo: " + e.getMessage(), e);
+            // El detalle tecnico queda en el log; al viajero le llega un motivo entendible
+            log.warn("Duffel rechazo la orden de {}: {}", reservaRef, e.getMessage());
+            throw new ExternalServiceException("La aerolínea rechazó la reserva: esa oferta ya no está disponible. "
+                    + "Volvé a buscar para ver los vuelos y precios actualizados.", e);
         }
     }
 

@@ -118,7 +118,8 @@ export default function MisViajes({ viajero, credito, pedirLogin, avisar, irA })
                   <div className="participantes">
                     <div className="progreso">
                       <div className="progreso-barra"><span style={{ width: `${Math.round((pagaron / r.participantes.length) * 100)}%` }} /></div>
-                      <small>{pagaron} de {r.participantes.length} pagaron{r.estado === 'PENDIENTE' ? ` · vence ${fechaHora(r.venceEn)}` : ''}</small>
+                      <small>{['CANCELADA', 'FALLIDA'].includes(r.estado) ? 'Se devolvió lo que cada uno había pagado'
+                        : `${pagaron} de ${r.participantes.length} pagaron${r.estado === 'PENDIENTE' ? ` · vence ${fechaHora(r.venceEn)}` : ''}`}</small>
                     </div>
                     {r.participantes.map((p) => (
                       <div key={p.id} className="participante">

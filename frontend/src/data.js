@@ -30,6 +30,20 @@ export const FOCOS = [
 
 export const PREFERENCIAS = ['aventura', 'naturaleza', 'gastronomia', 'cultura']
 
+// Las claves viajan sin tildes en la API; esto es solo lo que se muestra
+const TEXTOS = {
+  gastronomia: 'gastronomía', aerolinea: 'aerolínea', salida: 'salida', estrellas: 'estrellas', regimen: 'régimen',
+  categoria: 'categoría', duracion: 'duración', plazas: 'plazas', transmision: 'transmisión'
+}
+export const texto = (k) => TEXTOS[k] || k
+
+/** Valor de un atributo para mostrar: la salida "2026-12-31T23:13:00" queda "31/12 23:13". */
+export const valorDetalle = (k, v) => {
+  const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/)
+  if (m) return `${m[3]}/${m[2]} ${m[4]}:${m[5]}`
+  return texto(String(v))
+}
+
 export const hoyMas = (d) => {
   const f = new Date(Date.now() + d * 864e5)
   return new Date(f.getTime() - f.getTimezoneOffset() * 6e4).toISOString().slice(0, 10)

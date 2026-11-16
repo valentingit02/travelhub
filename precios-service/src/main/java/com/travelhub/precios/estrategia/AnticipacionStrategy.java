@@ -37,9 +37,9 @@ public class AnticipacionStrategy implements EstrategiaPrecio {
     @Override
     public String motivo(ContextoCotizacion ctx) {
         long d = dias(ctx);
-        if (d >= 60) return "Compra anticipada (" + d + " dias)";
-        if (d >= 30) return "Anticipacion media (" + d + " dias)";
-        if (d < 7) return "Ultimo momento (" + d + " dias)";
-        return "Anticipacion normal (" + d + " dias)";
+        if (d >= 60) return "Compra anticipada (" + d + " días)";
+        if (d >= 30) return "Anticipación media (" + d + " días)";
+        if (d < 7) return "Último momento (" + d + " días)";
+        return "Anticipación normal (" + d + " días)";
     }
 }

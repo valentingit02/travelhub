@@ -63,7 +63,7 @@ class SeguridadWebTest {
     void tokenInvalidoEs401() throws Exception {
         mvc.perform(get("/api/reservas").header("Authorization", "Bearer no-es-un-jwt"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("sesion")));
+                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("sesión")));
     }
 
     @Test

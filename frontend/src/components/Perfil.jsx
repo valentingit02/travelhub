@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api.js'
-import { ORIGENES, PREFERENCIAS, fechaHora } from '../data.js'
+import { ORIGENES, PREFERENCIAS, fechaHora, texto } from '../data.js'
 
 /** Mi perfil: datos personales, preferencias (las usa la IA), aeropuerto habitual y contraseña. */
 export default function Perfil({ viajero, onGuardado, pedirLogin, avisar }) {
@@ -103,7 +103,7 @@ function FormPerfil({ viajero, onGuardado, avisar }) {
             <div>
               {PREFERENCIAS.map((p) => (
                 <button type="button" key={p} className={`chip-toggle ${prefs.includes(p) ? 'on' : ''}`}
-                  onClick={() => setPrefs((x) => x.includes(p) ? x.filter((y) => y !== p) : [...x, p])}>{p}</button>
+                  onClick={() => setPrefs((x) => x.includes(p) ? x.filter((y) => y !== p) : [...x, p])}>{texto(p)}</button>
               ))}
             </div>
           </div>
@@ -121,7 +121,7 @@ function FormPerfil({ viajero, onGuardado, avisar }) {
           <label>Repetir nueva<input type="password" required minLength={8} maxLength={72} value={pw.repetir} onChange={setP('repetir')} autoComplete="new-password" /></label>
           <button className="btn btn-linea btn-bloque" disabled={cambiando}>{cambiando ? 'Cambiando…' : 'Cambiar contraseña'}</button>
           {errorPw && <div className="form-error" role="alert">{errorPw}</div>}
-          <small className="gris">Tu contraseña se guarda cifrada (BCrypt). Nadie, ni siquiera TravelHub, puede verla.</small>
+          <small className="gris">Tu contraseña no se guarda: se guarda solo su hash (BCrypt), así que nadie, ni siquiera TravelHub, puede leerla.</small>
         </form>
       </div>
     </div>

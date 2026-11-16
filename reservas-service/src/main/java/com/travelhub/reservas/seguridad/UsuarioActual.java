@@ -16,7 +16,7 @@ public final class UsuarioActual {
         try {
             return Long.valueOf(jwt.getSubject());
         } catch (NumberFormatException e) {
-            throw new UnauthorizedException("Tu sesion no es valida. Ingresa de nuevo.");
+            throw new UnauthorizedException("Tu sesión no es válida. Ingresá de nuevo.");
         }
     }
 
@@ -24,7 +24,7 @@ public final class UsuarioActual {
     public static Long exigirMismo(Jwt jwt, Long viajeroPedido) {
         Long id = id(jwt);
         if (viajeroPedido != null && !viajeroPedido.equals(id)) {
-            throw new ForbiddenException("No podes acceder a datos de otro viajero.");
+            throw new ForbiddenException("No podés acceder a datos de otro viajero.");
         }
         return id;
     }

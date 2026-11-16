@@ -13,26 +13,26 @@ OK   [Logging] X-Correlation-Id en la respuesta
 OK   [Patrones] Strategy: julio mas caro que abril -> julio=364.65 abril=252.45
 OK   [Errores] fechas invertidas -> 400 con formato ApiError -> La fecha de fin debe ser posterior a la de inicio
 OK   [Seguridad] registro con contrasena
-OK   [Saga/Facade] reserva creada (PENDIENTE) -> #25
+OK   [Saga/Facade] reserva creada (PENDIENTE) -> #39
 OK   [Mensajeria] pago asincronico por RabbitMQ -> CONFIRMADA -> CONFIRMADA
-OK   [Mensajeria] mail de confirmacion (consumidor notificaciones) -> TravelHub · Tu viaje a BRC está confirmado (#25)
+OK   [Mensajeria] mail de confirmacion (consumidor notificaciones) -> TravelHub Â· Tu viaje a Bariloche estÃ¡ confirmado (#39)
 OK   [Saga] hotel falla -> compensa el vuelo -> FALLIDA ['COTIZAR', 'RESERVAR_VUELO', 'RESERVAR_HOTEL', 'COMPENSAR_VUELO']
 OK   [Viaje compartido] reserva compartida con invitado
 OK   [Viaje compartido] mail de invitacion al amigo
 OK   [Viaje compartido] el amigo paga sin cuenta (link publico) -> HTTP 200
 OK   [Seguridad] reservas sin token -> 401
 OK   [Seguridad] token adulterado -> 401
-OK   [Seguridad] contrasena incorrecta -> 401 -> Email o contrasena incorrectos.
+OK   [Seguridad] contrasena incorrecta -> 401 -> Email o contraseÃ±a incorrectos.
 OK   [Seguridad] ver la reserva de otro -> 403
 OK   [Seguridad] cancelar la reserva de otro -> 403
 OK   [Seguridad] listar reservas de otro -> 403
 OK   [Privacidad] perfil sin hash y con documento enmascarado -> ****222
 OK   [IA] recomendaciones por REST -> Cerro Catedral
-OK   [IA] asistente conversacional -> Te armé un viaje a Bariloche del 10 de julio al 15 de julio para 2: Ae
-OK   [API externa] Open-Meteo (clima real en el kit) -> mismas fechas del año anterior
+OK   [IA] asistente conversacional -> Te armÃ© un viaje a Bariloche del 10 de julio al 15 de julio para 2: Ae
+OK   [API externa] Open-Meteo (clima real en el kit) -> mismas fechas del aÃ±o anterior
 OK   [API externa] Open Library (libros) -> Open Library
 OK   [IA] kit con mapa de excursiones
-OK   [IA] modelo de anomalias entrenado -> {"version":"v2-ref+1grupos-e1","minMuestrasPorGrupo":20,"referencia":{"VUELO":{"medianaUsd
+OK   [IA] modelo de anomalias entrenado -> {"version":"v2-ref+3grupos-e1","minMuestrasPorGrupo":20,"referencia":{"VUELO":{"medianaUsd
 OK   [Seguridad] el operador tiene el rol ADMIN -> admin@travelhub.local -> ['ADMIN'] (debe estar en ADMIN_EMAILS)
 OK   [Seguridad] ver autos sigue siendo publico
 OK   [Seguridad] cambiar un precio sin token -> 401

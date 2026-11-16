@@ -43,10 +43,21 @@ public class ReservaSaga {
                 registrar(reserva, paso, "FALLO", e.getMessage());
                 log.warn("Saga reserva {}: fallo {} ({}). Compensando...", reserva.getId(), paso, e.getMessage());
                 compensar(reserva);
-                return "Fallo al reservar " + item.getTipo() + ": " + e.getMessage();
+                return "No se pudo reservar " + nombre(item) + ". " + e.getMessage()
+                        + " Cancelamos lo que ya estaba reservado y no se cobró nada.";
             }
         }
         return null;
+    }
+
+    private static String nombre(ItemReserva item) {
+        String tipo = switch (item.getTipo()) {
+            case VUELO -> "el vuelo";
+            case HOTEL -> "el alojamiento";
+            case AUTO -> "el auto";
+            case EXCURSION -> "la excursión";
+        };
+        return tipo + " \"" + item.getDescripcion() + "\"";
     }
 
     /** Cancela, en orden inverso, todos los items que estaban reservados. */

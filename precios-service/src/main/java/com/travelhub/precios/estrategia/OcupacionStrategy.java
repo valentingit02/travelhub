@@ -28,6 +28,6 @@ public class OcupacionStrategy implements EstrategiaPrecio {
 
     @Override
     public String motivo(ContextoCotizacion ctx) {
-        return "Ocupacion " + Math.round(ctx.ocupacion() * 100) + " %";
+        return "Ocupación " + Math.round(ctx.ocupacion() * 100) + " %";
     }
 }

@@ -96,11 +96,11 @@ public class SeguridadConfig {
         AuthenticationEntryPoint sinSesion = (req, res, ex) -> {
             boolean traiaToken = ex instanceof OAuth2AuthenticationException;
             escribir(res, mapper, HttpStatus.UNAUTHORIZED, traiaToken
-                    ? "Tu sesion vencio o no es valida. Ingresa de nuevo."
+                    ? "Tu sesión venció o no es válida. Ingresá de nuevo."
                     : "Tenes que ingresar para usar esta funcion.");
         };
         AccessDeniedHandler denegado = (req, res, ex) ->
-                escribir(res, mapper, HttpStatus.FORBIDDEN, "No tenes permiso para esta operacion.");
+                escribir(res, mapper, HttpStatus.FORBIDDEN, "No tenés permiso para esta operación.");
 
         http.csrf(AbstractHttpConfigurer::disable)            // API sin cookies: el token va en un header
             .httpBasic(AbstractHttpConfigurer::disable)

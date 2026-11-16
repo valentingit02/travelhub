@@ -146,7 +146,7 @@ public class OfertaService {
         try {
             return Long.valueOf(id.substring(5));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Id de auto invalido: " + id);
+            throw new IllegalArgumentException("Id de auto inválido: " + id);
         }
     }
 }

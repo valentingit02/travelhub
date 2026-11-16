@@ -48,7 +48,7 @@ public class ReservaProveedorService {
 
     private Long autoId(String productoId) {
         if (!productoId.startsWith("AUTO-")) {
-            throw new IllegalArgumentException("Id de auto invalido: " + productoId);
+            throw new IllegalArgumentException("Id de auto inválido: " + productoId);
         }
         return Long.valueOf(productoId.substring(5));
     }

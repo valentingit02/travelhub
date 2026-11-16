@@ -141,7 +141,7 @@ check("Mensajeria", "mail de confirmacion (consumidor notificaciones)", m, m[0][
 
 # Saga con compensacion
 c, t, _ = req("POST", f"{GW}/api/reservas", {"destino": "BRC", "desde": "2027-08-10", "hasta": "2027-08-12",
-              "pasajeros": 1, "items": [{"tipo": "VUELO", "productoId": busq["vuelos"][1]["id"]},
+              "pasajeros": 1, "items": [{"tipo": "VUELO", "productoId": busq["vuelos"][-1]["id"]},
                                         {"tipo": "HOTEL", "productoId": "MOCK-HOTEL-BRC-FALLA"}]}, headers=auth)
 r2 = js(t) or {}
 pasos = [p["paso"] for p in r2.get("saga", [])]

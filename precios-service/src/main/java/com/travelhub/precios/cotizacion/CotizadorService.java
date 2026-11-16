@@ -64,7 +64,7 @@ public class CotizadorService {
     private String unidad(CotizacionRequest r) {
         return switch (r.tipoProducto()) {
             case HOTEL -> "noches";
-            case AUTO -> "dias";
+            case AUTO -> "días";
             case VUELO, EXCURSION -> "pasajeros";
         };
     }

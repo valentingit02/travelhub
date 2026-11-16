@@ -5,6 +5,7 @@ from typing import List, Optional
 from . import libros, recomendaciones
 from .clima import clima as consultar_clima
 from .config import AEROPUERTOS, DESTINOS
+from .recomendaciones import CATEGORIAS
 
 
 def equipaje(destino: str, c: Optional[dict], noches: int, preferencias: List[str]) -> List[dict]:
@@ -73,7 +74,7 @@ def itinerario(destino: str, desde: date, hasta: date, recos: List[dict]) -> Lis
             ubicacion = en_aeropuerto
         elif actividades:
             a = actividades.pop(0)
-            titulo, detalle = a["nombre"], f"{a['categoria'].capitalize()} · {a['motivo']}"
+            titulo, detalle = a["nombre"], f"{CATEGORIAS.get(a['categoria'], a['categoria']).capitalize()} · {a['motivo']}"
             exc = recomendaciones.ubicacion(titulo)
             ubicacion = {"tipo": "excursion", **exc} if exc else {}
         else:

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api, nuevaClave } from '../api.js'
-import { DESTINOS, TIPOS, ciudad, dinero, fecha, noches } from '../data.js'
+import { DESTINOS, TIPOS, ciudad, dinero, fecha, noches, texto } from '../data.js'
 
 export default function Paquete({ paquete, busqueda, viajero, credito, quitar, irA, pedirLogin, avisar, onReservado, rebuscar }) {
   const [cotizacion, setCotizacion] = useState(null)
@@ -222,11 +222,11 @@ export default function Paquete({ paquete, busqueda, viajero, credito, quitar, i
             {recos?.clima && (
               <div className="clima">
                 <b>{recos.clima.min}° / {recos.clima.max}°</b>
-                <small>{recos.clima.dias_lluvia} días de lluvia · {recos.clima.fuente}</small>
+                <small>{recos.clima.dias_lluvia} {recos.clima.dias_lluvia === 1 ? 'día' : 'días'} de lluvia · {recos.clima.fuente}</small>
               </div>
             )}
-            {recos?.recomendaciones?.map((r) => (
-              <div key={r.nombre} className="reco"><b>{r.nombre}</b><small>{r.categoria} · {r.motivo}</small></div>
+            {recos?.recomendaciones?.filter((r) => !paquete.some((p) => p.nombre === r.nombre)).map((r) => (
+              <div key={r.nombre} className="reco"><b>{r.nombre}</b><small>{texto(r.categoria)} · {r.motivo}</small></div>
             ))}
             {!recos && <p className="gris">El servicio de IA no está disponible en este momento.</p>}
           </div>

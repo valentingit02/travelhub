@@ -21,11 +21,37 @@ final class Plantillas {
                       %s
                     </div>
                     <div style="padding:12px 24px;color:#5f6b7d;font-size:12px;border-top:1px solid #ebe6da">
-                      Trabajo Practico · Desarrollo de Aplicaciones II · UADE. Modo demostracion: no se realizan cobros reales.
+                      Trabajo Práctico · Desarrollo de Aplicaciones II · UADE. Modo demostración: no se realizan cobros reales.
                     </div>
                   </div>
                 </div>
                 """.formatted(esc(titulo), cuerpo);
+    }
+
+    private static final java.util.Map<String, String> CIUDADES = java.util.Map.of(
+            "BRC", "Bariloche", "MDZ", "Mendoza", "IGR", "Puerto Iguazú", "USH", "Ushuaia", "MAD", "Madrid");
+
+    /** Nombre de la ciudad para mostrar ("BRC" -> "Bariloche"); si no la conoce, devuelve el codigo. */
+    static String ciudad(String iata) {
+        return iata == null ? "" : CIUDADES.getOrDefault(iata.toUpperCase(), iata);
+    }
+
+    /** Tipo de producto legible ("EXCURSION" -> "Excursión"). */
+    static String tipo(Object t) {
+        String s = String.valueOf(t);
+        return switch (s) {
+            case "VUELO" -> "Vuelo";
+            case "HOTEL" -> "Alojamiento";
+            case "AUTO" -> "Auto";
+            case "EXCURSION" -> "Excursión";
+            default -> s;
+        };
+    }
+
+    /** Fecha "2026-12-31" -> "31/12/2026". */
+    static String fecha(Object iso) {
+        String s = String.valueOf(iso);
+        return s.matches("\\d{4}-\\d{2}-\\d{2}.*") ? s.substring(8, 10) + "/" + s.substring(5, 7) + "/" + s.substring(0, 4) : s;
     }
 
     static String boton(String texto, String url) {

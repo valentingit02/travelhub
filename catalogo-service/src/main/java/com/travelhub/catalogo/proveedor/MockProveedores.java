@@ -42,22 +42,22 @@ public class MockProveedores {
             "MDZ", List.of("Park Hyatt Mendoza", "Hotel Bodega Andina", "Posada Cacheuta"),
             "IGR", List.of("Gran Meliá Iguazú", "Hotel Selva Verde", "Posada Yaguareté"),
             "USH", List.of("Arakur Resort", "Hotel Fin del Mundo", "Hostería Canal Beagle"),
-            "MAD", List.of("Hotel Gran Vía", "Hostal Sol", "NH Madrid Centro"));
+            "MAD", List.of("Hotel Gran Vía", "NH Madrid Centro", "Hostal Sol"));
 
     private static final Map<String, List<String[]>> EXCURSIONES = Map.of(
             "BRC", List.of(new String[]{"Cerro Catedral", "aventura"}, new String[]{"Circuito Chico", "naturaleza"},
                     new String[]{"Ruta del chocolate", "gastronomia"}),
-            "MDZ", List.of(new String[]{"Bodegas de Lujan de Cuyo", "gastronomia"},
+            "MDZ", List.of(new String[]{"Bodegas de Luján de Cuyo", "gastronomia"},
                     new String[]{"Alta Montaña y Aconcagua", "naturaleza"}, new String[]{"Rafting en Potrerillos", "aventura"}),
             "IGR", List.of(new String[]{"Cataratas lado argentino", "naturaleza"}, new String[]{"Gran Aventura en lancha", "aventura"},
-                    new String[]{"Museo Guemes y selva", "cultura"}),
-            "USH", List.of(new String[]{"Tren del Fin del Mundo", "cultura"}, new String[]{"Navegacion Canal Beagle", "naturaleza"},
+                    new String[]{"Museo Güemes y selva", "cultura"}),
+            "USH", List.of(new String[]{"Tren del Fin del Mundo", "cultura"}, new String[]{"Navegación Canal Beagle", "naturaleza"},
                     new String[]{"Trekking Laguna Esmeralda", "aventura"}),
             "MAD", List.of(new String[]{"Museo del Prado", "cultura"}, new String[]{"Tour de tapas", "gastronomia"},
-                    new String[]{"Toledo dia completo", "cultura"}));
+                    new String[]{"Toledo día completo", "cultura"}));
 
     public List<OfertaProveedor> vuelos(String origen, String destino, LocalDate fecha, int pax) {
-        String[] aerolineas = {"Aerolineas Argentinas", "Flybondi", "JetSMART"};
+        String[] aerolineas = {"Aerolíneas Argentinas", "Flybondi", "JetSMART"};
         String[] horas = {"07:15", "12:40", "19:05"};
         int base = destino.equalsIgnoreCase("MAD") ? 850 : 120;
         List<OfertaProveedor> out = new ArrayList<>();
@@ -79,7 +79,7 @@ public class MockProveedores {
             BigDecimal precio = BigDecimal.valueOf(60 + semilla(destino + nombres.get(i)) % 140L);
             res.add(new OfertaProveedor("MOCK-HOTEL-" + destino + "-" + i, TipoProducto.HOTEL, "MOCK",
                     nombres.get(i), destino, precio, "USD", "noches", ocupacion(destino + in + i),
-                    Map.of("estrellas", String.valueOf(3 + i % 3), "regimen", i == 0 ? "Desayuno" : "Solo alojamiento")));
+                    Map.of("estrellas", String.valueOf(5 - i % 3), "regimen", i == 0 ? "Con desayuno" : "Solo alojamiento")));
         }
         res.add(new OfertaProveedor(hotelFalla(destino), TipoProducto.HOTEL, "MOCK", "Hotel Falla (demo de Saga)",
                 destino, new BigDecimal("80"), "USD", "noches", 0.4, Map.of("nota", "Siempre falla al reservar")));
@@ -102,7 +102,7 @@ public class MockProveedores {
     public String reservar(String ofertaId) {
         if (esHotelFalla(ofertaId)) {
             log.warn("Mock: el hotel {} rechaza la reserva (demo de compensacion)", ofertaId);
-            throw new ExternalServiceException("El proveedor de hoteles rechazo la reserva (sin disponibilidad)");
+            throw new ExternalServiceException("El hotel rechazó la reserva: no tiene disponibilidad para esas fechas.");
         }
         String ref = "MOCKREF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         log.info("Mock: reservado {} -> {}", ofertaId, ref);

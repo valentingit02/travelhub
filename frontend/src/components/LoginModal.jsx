@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api.js'
-import { PREFERENCIAS } from '../data.js'
+import { PREFERENCIAS, texto } from '../data.js'
 
 // ingresar: email + contraseña · registrar: cuenta nueva · activar: cuenta anterior al login (crea su contraseña)
 const TITULOS = {
@@ -125,7 +125,7 @@ export default function LoginModal({ onOk, onClose }) {
               <div>
                 {PREFERENCIAS.map((p) => (
                   <button type="button" key={p} className={`chip-toggle ${prefs.includes(p) ? 'on' : ''}`}
-                    onClick={() => setPrefs((x) => x.includes(p) ? x.filter((y) => y !== p) : [...x, p])}>{p}</button>
+                    onClick={() => setPrefs((x) => x.includes(p) ? x.filter((y) => y !== p) : [...x, p])}>{texto(p)}</button>
                 ))}
               </div>
             </div>

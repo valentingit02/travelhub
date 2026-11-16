@@ -11,6 +11,15 @@ def _ciudad(iata: str) -> str:
     return DESTINOS.get(iata.upper(), (iata,))[0]
 
 
+TIPOS = {"VUELO": "Vuelo", "HOTEL": "Alojamiento", "AUTO": "Auto", "EXCURSION": "Excursión"}
+
+
+def _fecha(iso: str) -> str:
+    """"2026-12-31" -> "31/12/2026"."""
+    s = str(iso)
+    return f"{s[8:10]}/{s[5:7]}/{s[0:4]}" if len(s) >= 10 and s[4] == "-" else s
+
+
 def _texto_clima(c: Optional[dict]) -> str:
     if not c:
         return ""
@@ -19,14 +28,15 @@ def _texto_clima(c: Optional[dict]) -> str:
 
 
 def plantilla(datos: dict, clima: Optional[dict]) -> str:
-    items = "\n".join(f"- {i['tipo'].capitalize()}: {i['descripcion']}" for i in datos["items"])
+    items = "\n".join(f"- {TIPOS.get(i['tipo'], i['tipo'].capitalize())}: {i['descripcion']}" for i in datos["items"])
+    personas = "1 persona" if int(datos["pasajeros"]) == 1 else f"{datos['pasajeros']} personas"
     abrigo = ""
     if clima and clima["min"] < 5:
         abrigo = " Llevá buen abrigo: las mínimas son bajas."
     elif clima and clima["dias_lluvia"] > clima["dias"] / 3:
         abrigo = " No te olvides el paraguas."
-    return (f"¡Hola {datos['nombre']}! Tu viaje a {_ciudad(datos['destino'])} del {datos['desde']} "
-            f"al {datos['hasta']} para {datos['pasajeros']} persona(s) está confirmado.\n"
+    return (f"¡Hola {datos['nombre']}! Tu viaje a {_ciudad(datos['destino'])} del {_fecha(datos['desde'])} "
+            f"al {_fecha(datos['hasta'])} para {personas} está confirmado.\n"
             f"{items}\nTotal: {datos['total']} {datos['moneda']}.\n{_texto_clima(clima)}{abrigo}").strip()
 
 

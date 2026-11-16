@@ -126,9 +126,9 @@ public class BusquedaService {
     private OfertaProveedor aOferta(Auto a, double ocupacion) {
         return new OfertaProveedor("AUTO-" + a.getId(), TipoProducto.AUTO, "TRAVELHUB",
                 a.getMarca() + " " + a.getModelo() + " (" + a.getCategoria() + ")", a.getDestinoIata(),
-                a.getPrecioBaseDia(), a.getMoneda(), "dias", ocupacion,
+                a.getPrecioBaseDia(), a.getMoneda(), "días", ocupacion,
                 Map.of("plazas", String.valueOf(a.getPlazas()),
-                        "transmision", a.isTransmisionAutomatica() ? "Automatica" : "Manual"));
+                        "transmision", a.isTransmisionAutomatica() ? "Automática" : "Manual"));
     }
 
     private List<ProductoResponse> mapear(List<OfertaProveedor> lista) {

@@ -123,7 +123,7 @@ class DetectorAnomalias:
         aislado = modelo.bosque.predict([[x]])[0] == -1
 
         if abs(z) >= umbral:
-            motivo = f"Precio {'muy bajo' if z < 0 else 'muy alto'} para {tipo} segun {fuente} (z={z:.1f})"
+            motivo = f"Precio {'muy bajo' if z < 0 else 'muy alto'} para {tipo} según {fuente} (z={z:.1f})"
             return Resultado(True, score, float(z), motivo, self.version, fuente)
         if fuente != "referencia" and aislado and abs(z) >= UMBRAL_Z_IFOREST:
             return Resultado(True, score, float(z), f"Isolation Forest aislo el precio ({fuente}, z={z:.1f})",

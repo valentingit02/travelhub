@@ -21,8 +21,8 @@ public final class ViajeroDtos {
                                 @Pattern(regexp = "^$|^\\S.{4,18}\\S$", message = "debe tener entre 6 y 20 caracteres") String documento,
                                 @NotNull @Past LocalDate fechaNacimiento,
                                 @Size(max = 200) String preferencias,
-                                @Size(max = 30) @Pattern(regexp = "^$|^[+0-9 ()-]{6,30}$", message = "telefono invalido") String telefono,
-                                @Pattern(regexp = "^$|^[A-Za-z]{3}$", message = "debe ser un codigo IATA de 3 letras") String aeropuertoOrigen) { }
+                                @Size(max = 30) @Pattern(regexp = "^$|^[+0-9 ()-]{6,30}$", message = "teléfono inválido") String telefono,
+                                @Pattern(regexp = "^$|^[A-Za-z]{3}$", message = "debe ser un código IATA de 3 letras") String aeropuertoOrigen) { }
 
     public record CambioPasswordRequest(@NotBlank String actual,
                                         @NotBlank @Size(min = 8, max = 72) String nueva) { }

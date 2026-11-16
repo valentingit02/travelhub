@@ -20,9 +20,9 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    static final String CREDENCIALES_INVALIDAS = "Email o contrasena incorrectos.";
+    static final String CREDENCIALES_INVALIDAS = "Email o contraseña incorrectos.";
     static final String CUENTA_SIN_PASSWORD =
-            "Tu cuenta es anterior al ingreso con contrasena. Crea tu contrasena confirmando tu documento.";
+            "Tu cuenta es anterior al ingreso con contraseña. Creá tu contraseña confirmando tu documento.";
 
     private final ViajeroRepository viajeros;
     private final PasswordEncoder encoder;
@@ -41,8 +41,8 @@ public class AuthService {
         String email = normalizar(r.email());
         viajeros.findByEmailIgnoreCase(email).ifPresent(v -> {
             throw new ConflictException(v.tienePassword()
-                    ? "Ya existe una cuenta con ese email. Ingresa con tu contrasena."
-                    : "Ya existe una cuenta con ese email. Ingresa y crea tu contrasena confirmando tu documento.");
+                    ? "Ya existe una cuenta con ese email. Ingresá con tu contraseña."
+                    : "Ya existe una cuenta con ese email. Ingresá y creá tu contraseña confirmando tu documento.");
         });
         Viajero v = new Viajero(r.nombre().trim(), r.apellido().trim(), email, r.documento().trim(),
                 r.fechaNacimiento(), r.preferencias());
@@ -75,7 +75,7 @@ public class AuthService {
         Viajero v = viajeros.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UnauthorizedException("Los datos no coinciden con ninguna cuenta."));
         if (v.tienePassword()) {
-            throw new ConflictException("Tu cuenta ya tiene contrasena: ingresa normalmente.");
+            throw new ConflictException("Tu cuenta ya tiene contraseña: ingresá normalmente.");
         }
         if (!v.getDocumento().trim().equalsIgnoreCase(r.documento().trim())) {
             log.warn("Activacion fallida (documento no coincide): {}", UsuarioActual.enmascarar(email));
@@ -88,9 +88,9 @@ public class AuthService {
 
     /** La contrasena actual incorrecta es 400 (no 401) para que el frontend no cierre la sesion. */
     public void cambiarPassword(Long viajeroId, String actual, String nueva) {
-        Viajero v = viajeros.findById(viajeroId).orElseThrow(() -> new UnauthorizedException("Tu sesion no es valida."));
+        Viajero v = viajeros.findById(viajeroId).orElseThrow(() -> new UnauthorizedException("Tu sesión no es válida."));
         if (!v.tienePassword() || !encoder.matches(actual, v.getPasswordHash())) {
-            throw new IllegalArgumentException("La contrasena actual no es correcta.");
+            throw new IllegalArgumentException("La contraseña actual no es correcta.");
         }
         v.cambiarPassword(encoder.encode(nueva));
         viajeros.save(v);

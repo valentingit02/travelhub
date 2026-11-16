@@ -125,7 +125,9 @@ public class HotelbedsHotelAdapter implements ProveedorHoteles {
             log.info("Hotelbeds: reserva {} creada para {}", ref, reservaRef);
             return ref;
         } catch (Exception e) {
-            throw new ExternalServiceException("Hotelbeds rechazo la reserva del hotel: " + e.getMessage(), e);
+            log.warn("Hotelbeds rechazo la reserva de {}: {}", reservaRef, e.getMessage());
+            throw new ExternalServiceException("El hotel rechazó la reserva: no tiene disponibilidad para esas fechas. "
+                    + "Volvé a buscar para ver otras opciones.", e);
         }
     }
 

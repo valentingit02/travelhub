@@ -287,7 +287,7 @@ def responder(mensaje: str, contexto: Optional[dict] = None, hoy: Optional[date]
             if float(cot_b["total"]) < float(cot["total"]):
                 productos, cot = baratos, cot_b
             nota_presupuesto = (" Te lo dejé en la versión más económica" if float(cot["total"]) <= i["presupuesto"]
-                                else f" Ojo: aun lo más económico supera tu presupuesto de USD {i['presupuesto']}") + "."
+                                else f" Ojo: aún lo más económico supera tu presupuesto de USD {i['presupuesto']}") + "."
     except Exception:
         return _resp("No pude consultar la disponibilidad en este momento. Probá de nuevo en unos segundos.", i, [],
                      [], None, generado)
