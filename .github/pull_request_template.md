@@ -18,7 +18,7 @@ Cierra #<!-- numero de issue -->
 2. 
 
 ## Evidencias
-<!-- Capturas de Swagger, SoapUI, RabbitMQ, logs, etc. Sirven despues para el informe. -->
+<!-- Capturas de Swagger, SoapUI, RabbitMQ, logs, etc. -->
 
 ## Checklist
 - [ ] `mvn clean verify` pasa en local

@@ -5,7 +5,7 @@
 Plataforma distribuida de reservas de viajes con cotizacion dinamica e IA.
 Trabajo Practico Obligatorio - Desarrollo de Aplicaciones II (UADE).
 
-**Empezar aca:** [docs/GUIA_INSTALACION.md](docs/GUIA_INSTALACION.md) · Demo: [docs/DEMO.md](docs/DEMO.md)
+**Empezar aca:** [docs/GUIA_INSTALACION.md](docs/GUIA_INSTALACION.md)
 
 ## Documentacion
 | # | Documento | Contenido |
@@ -17,7 +17,7 @@ Trabajo Practico Obligatorio - Desarrollo de Aplicaciones II (UADE).
 | 5 | [IA](docs/05_IA.md) | Decisiones de diseno de la IA y su validacion |
 | 6 | [Pruebas](docs/06_PRUEBAS.md) | Tipos de prueba, resultados y [evidencias](docs/evidencias/) |
 | — | [Contratos](docs/contratos/) | OpenAPI de cada servicio, WSDL y XSD |
-| — | [Instalacion](docs/GUIA_INSTALACION.md) · [Demo](docs/DEMO.md) | Manual de despliegue y guion de la defensa |
+| — | [Instalacion](docs/GUIA_INSTALACION.md) | Manual de despliegue |
 
 ```bash
 cp .env.example .env
