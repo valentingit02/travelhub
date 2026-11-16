@@ -4,7 +4,7 @@ from math import asin, cos, radians, sin, sqrt
 
 import app.kit as kit
 import app.libros as libros
-from app.config import DESTINOS
+from app.config import AEROPUERTOS, DESTINOS
 from app.recomendaciones import EXCURSIONES, UBICACIONES
 
 
@@ -31,8 +31,10 @@ def test_el_kit_trae_ubicacion_en_los_dias_con_excursion(monkeypatch):
     k = kit.generar("BRC", date(2027, 7, 10), date(2027, 7, 13), preferencias=["aventura"])
     plan = k["itinerario"]
 
-    assert "lat" not in plan[0] and "lat" not in plan[-1]          # llegada y regreso: sin pin
-    con_pin = [d for d in plan if "lat" in d]
+    # llegada y regreso: en el aeropuerto del destino
+    for d in (plan[0], plan[-1]):
+        assert d["tipo"] == "aeropuerto" and (d["lat"], d["lon"]) == AEROPUERTOS["BRC"][2:]
+    con_pin = [d for d in plan if d.get("tipo") == "excursion"]
     assert con_pin and con_pin[0]["titulo"] == "Cerro Catedral"    # la preferencia "aventura" va primero
     assert (con_pin[0]["lat"], con_pin[0]["lon"]) == UBICACIONES["Cerro Catedral"]
 
@@ -49,7 +51,8 @@ def test_el_mapa_tiene_centro_y_no_repite_excursiones_del_itinerario(monkeypatch
     en_plan = {d["titulo"] for d in k["itinerario"]}
     otras = {e["nombre"] for e in m["otrasExcursiones"]}
     assert otras and not (otras & en_plan)
-    assert len(otras) + len([d for d in k["itinerario"] if "lat" in d]) == len(EXCURSIONES["BRC"])
+    assert len(otras) + len([d for d in k["itinerario"] if d.get("tipo") == "excursion"]) == len(EXCURSIONES["BRC"])
+    assert m["aeropuerto"]["nombre"] == AEROPUERTOS["BRC"][0] and m["aeropuerto"]["direccion"]
 
 
 def test_destino_sin_coordenadas_no_rompe_el_kit(monkeypatch):
@@ -58,3 +61,12 @@ def test_destino_sin_coordenadas_no_rompe_el_kit(monkeypatch):
     k = kit.generar("XXX", date(2027, 7, 10), date(2027, 7, 12))
     assert k["mapa"] is None
     assert all("lat" not in d for d in k["itinerario"])
+
+
+def test_cada_destino_tiene_su_aeropuerto_cerca():
+    assert set(AEROPUERTOS) == set(DESTINOS)
+    for destino, (ciudad, lat, lon) in DESTINOS.items():
+        nombre, direccion, a_lat, a_lon = AEROPUERTOS[destino]
+        assert nombre and direccion
+        # Los aeropuertos de estos destinos estan a menos de 30 km del centro (Barajas ~13 km, El Calafate ~20 km)
+        assert _km((lat, lon), (a_lat, a_lon)) < 30, f"el aeropuerto de {ciudad} queda lejos"

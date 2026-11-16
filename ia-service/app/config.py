@@ -36,5 +36,25 @@ DESTINOS = {
     "FTE": ("El Calafate", -50.34, -72.26),
 }
 
+# Aeropuerto de cada destino (nombre, direccion, lat, lon): pin del mapa y traslado de llegada / regreso
+AEROPUERTOS = {
+    "BRC": ("Aeropuerto Internacional Teniente Luis Candelaria",
+            "Ruta Provincial 80, San Carlos de Bariloche, Rio Negro", -41.1512, -71.1578),
+    "MDZ": ("Aeropuerto Internacional El Plumerillo",
+            "Acceso Norte s/n, Las Heras, Mendoza", -32.8317, -68.7929),
+    "IGR": ("Aeropuerto Internacional Cataratas del Iguazu",
+            "Ruta Nacional 101, Puerto Iguazu, Misiones", -25.7373, -54.4734),
+    "USH": ("Aeropuerto Internacional Malvinas Argentinas",
+            "Av. Heroes de Malvinas s/n, Ushuaia, Tierra del Fuego", -54.8433, -68.2958),
+    "MAD": ("Aeropuerto Adolfo Suarez Madrid-Barajas",
+            "Av. de la Hispanidad s/n, 28042 Madrid", 40.4719, -3.5626),
+    "BUE": ("Aeroparque Jorge Newbery",
+            "Av. Costanera Rafael Obligado s/n, Ciudad de Buenos Aires", -34.5592, -58.4156),
+    "SLA": ("Aeropuerto Internacional Martin Miguel de Guemes",
+            "Ruta Nacional 51, Salta", -24.8560, -65.4862),
+    "FTE": ("Aeropuerto Internacional Comandante Armando Tola",
+            "Ruta Provincial 11, El Calafate, Santa Cruz", -50.2803, -72.0532),
+}
+
 # Destinos que hoy vende el catalogo (los que el asistente puede ofrecer)
 DESTINOS_VENTA = ["BRC", "MDZ", "IGR", "USH", "MAD"]
